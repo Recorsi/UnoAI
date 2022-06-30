@@ -1,0 +1,15 @@
+Empty At Zero Creator
+Author : Pierre Stempin
+Support contact : pierre.stempin@gmail.com
+
+---
+
+How to Customize :
+
+- Change the different shortcuts :
+	In the "EmptyAtZero_Creator", "EmptyChildAtGlobalZero_Creator" 
+	or "EmptyChildAtLocalZero_Creator" script (depending or which method you want to change shortcut), 
+	(path : Empty At Zero Creator -> Scripts -> Editor)
+	change the "shortcutName" string content to your shortcut.
+
+	More info : https://docs.unity3d.com/ScriptReference/MenuItem.html

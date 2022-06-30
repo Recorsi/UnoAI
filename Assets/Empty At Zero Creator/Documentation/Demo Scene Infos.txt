@@ -1,0 +1,26 @@
+Empty At Zero Creator
+Author : Pierre Stempin
+Support contact : pierre.stempin@gmail.com
+
+---
+
+Demo Scene Infos : 
+	General Infos :
+	- I placed on purpose all the parent GameObjects in a local position, local rotation different from (0,0,0) 
+	and a local scale different from (1,1,1) so you can see what are their child local position, 
+	local rotation and local scale, when their parent transform is not reseted to default values.
+
+	- The GameObject A1 (global) position, (global) rotation are set to (0,0,0) and (global) scale to (1,1,1), 
+	but its local position, local rotation and local scale aren't because its parent transform values are not reseted.
+
+	- There are still some differences (for illustration purpose) between what you can see 
+	in the demo scene and the tool direct usage : 
+		- The gameObjects you will create with this tool will be named "GameObject" by default.
+		- The gameObjects you will create with this tool won't have an icon by default.
+
+	Demo Scene before Unity 4.6 :
+	- This scene illustrates the results of the creation of Empty GameObjects before Unity 4.6
+
+	Demo Scene Unity 4.6 and after :
+	- This scene doesn't work in a version of Unity anterior of 4.6
+	- This scene illustrates the results of the creation of Empty GameObjects on Unity 4.6 and after	

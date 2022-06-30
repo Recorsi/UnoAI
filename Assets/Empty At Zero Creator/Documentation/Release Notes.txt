@@ -1,0 +1,18 @@
+Empty At Zero Creator - v1.0.2
+Author : Pierre Stempin
+Support contact : pierre.stempin@gmail.com
+
+---
+
+v1.1.1 : Bug solved (A Null Reference Exception when you created a gameobject with no parent).
+
+v1.1.0 : From Unity 4.6 when the GameObject is created as a child of another GameObject with a RectTransform component on it, 
+	it will add a RectTransform component to the created GameObject.
+
+v1.0.2 : Build errors fixed, minor changes in scripts and documentation.
+
+v1.0.1 : Keyboard shortcuts changed to prevent possible interferences with typing.
+	Now, the keyboard shortcut for "Create Empty At Zero" is [Alt + N], instead of [Shift + N].
+	and "Create Empty Child At Local Zero" is [Ctrl + Alt + Shift + N] on Windows / [Cmd + Alt + N] on macOS, instead of [Alt + N].
+
+v1.0.0 : First released version.

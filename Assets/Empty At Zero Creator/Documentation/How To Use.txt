@@ -1,0 +1,55 @@
+Empty At Zero Creator
+Author : Pierre Stempin
+Support contact : pierre.stempin@gmail.com
+
+---
+
+How to use : 
+
+- General infos :
+	When a GameObject is created as a child of another GameObject with a RectTransform component on it, 
+	it will add a RectTransform component to the created GameObject.
+
+- Create Empty At Zero :
+	GameObject -> Create Empty At Zero (or use [Alt + N] shortcut with the keyboard).
+	or inside the Hierarchy Context Menu (since Unity 4.6) : Create Empty At Zero 
+	(Right click inside the Hierarchy window)
+
+	It creates a new Empty GameObject called "GameObject" on the Scene and selects it.
+	Its localPosition at creation is at Vector3.Zero (0,0,0).
+
+	If you have already a GameObject selected on the Scene :
+
+		if you have created the GameObject from the Hierarchy Context Menu :
+			the new Empty GameObject is created as child of the already selected GameObject,
+
+		else if you have created the GameObject from the GameObject window or from the keyboard shortcut :
+			the new Empty GameObject is created at Scene root.
+
+	Else if you have no GameObject already selected 
+	(whatever if you used the Hierarchy Context Menu, the GameObject window or the keyboard shortcut) :
+		the new Empty GameObject is created at Scene root.
+	
+
+- Create Empty Child At Global Zero :
+	GameObject -> Create Empty Child At Global Zero 
+	(or use [Ctrl + Alt + N] shortcut on Windows / [Cmd + Alt + N] shortcut on macOS with the keyboard).
+
+	It creates a new Empty GameObject called "GameObject" on the Scene and selects it.
+	Its (global) position at creation is at Vector3.Zero (0,0,0).
+
+	If you have already a GameObject selected on the Scene :
+		the new Empty GameObject is created as child of the already selected GameObject.
+	Else : 
+		the new Empty GameObject is created at Scene root.
+
+- Create Empty Child At Local Zero :
+	GameObject -> Create Empty Child At Local Zero (or use [Ctrl + Alt + Shift + N] shortcut on Windows / [Cmd + Alt + Shift + N] shortcut on macOS with the keyboard).
+
+	It creates a new Empty GameObject called "GameObject" on the Scene and selects it.
+	Its localPosition at creation is at Vector3.Zero (0,0,0).
+
+	If you have already a GameObject selected on the Scene :
+		the new Empty GameObject is created as child of the already selected GameObject.
+	Else : 
+		the new Empty GameObject is created at Scene root.

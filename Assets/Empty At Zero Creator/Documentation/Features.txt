@@ -1,0 +1,17 @@
+Empty At Zero Creator
+Author : Pierre Stempin
+Support contact : pierre.stempin@gmail.com
+
+---
+
+Thank you for downloading this tool, I hope you'll enjoy using it :)
+
+Empty At Zero Creator is a tool to create quickly new Empty GameObjects on the Scene 
+with a position or localPosition set at creation at Vector.Zero (0 in x, 0 in y, 0 in Z)
+
+These new Empty GameObjects position at creation won't depend of the SceneView Focus Point position, 
+no need to always reset your new Empty GameObject transform values 
+when your SceneView Focus Point position is not at (0,0,0).
+
+This tool makes it more convenient and effective to create already reseted transform values Empty GameObjects 
+in order to organize your scene properly.

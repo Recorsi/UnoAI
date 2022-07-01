@@ -28,7 +28,7 @@ public class CardSpawner : MonoBehaviour
     [SerializeField] private ActionCard[] actionCards;
     [SerializeField] private WildCard[] wildCards;
 
-    [SerializeField] private List<GameObject> gameCards;
+    public List<GameObject> gameCards;
 
     private void Awake()
     {
@@ -36,8 +36,11 @@ public class CardSpawner : MonoBehaviour
         {
             GameObject card = Instantiate(numberCardPrefab, UICanvas.transform);
             gameCards.Add(card);
-            card.name = "NumberCard" + numberCards[i].index;
-            card.GetComponentInChildren<TextMeshProUGUI>().text = numberCards[i].cardNumber.ToString();
+            card.name = "NumberCard_" + numberCards[i].color + "_" + numberCards[i].cardNumber;
+            TextMeshProUGUI[] cardText = card.GetComponentsInChildren<TextMeshProUGUI>();
+            foreach (var text in cardText)
+                text.text = numberCards[i].cardNumber.ToString();
+
             switch (numberCards[i].color)
             {
                 case NumberCard.Color.red:
@@ -60,8 +63,7 @@ public class CardSpawner : MonoBehaviour
         {
             GameObject card = Instantiate(actionCardPrefab, UICanvas.transform);
             gameCards.Add(card);
-            card.name = "ActionCard" + actionCards[i].index;
-            card.GetComponentInChildren<TextMeshProUGUI>().text = numberCards[i].cardNumber.ToString();
+            card.name = "ActionCard_" + actionCards[i].color + "_" + actionCards[i].type;
             switch (actionCards[i].color)
             {
                 case ActionCard.Color.red:
@@ -98,7 +100,7 @@ public class CardSpawner : MonoBehaviour
         {
             GameObject card = Instantiate(wildCardPrefab, UICanvas.transform);
             gameCards.Add(card);
-            card.name = "WildCard" + wildCards[i].index;
+            card.name = "WildCard_" + wildCards[i].type;
             switch (wildCards[i].type)
             {
                 case WildCard.Type.colorChange:
@@ -113,6 +115,15 @@ public class CardSpawner : MonoBehaviour
         }
 
         Shuffle(gameCards);
+    }
+
+    private int tempCardIndex = 0;
+    public GameObject PickCard()
+    {
+        GameObject card = gameCards[tempCardIndex];
+        tempCardIndex++;
+
+        return card;
     }
 
     public void Shuffle(List<GameObject> gos)

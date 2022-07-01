@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class CardSpawner : MonoBehaviour
 {
-    [SerializeField] GameObject UICanvas;
+    [SerializeField] GameObject parentObj;
 
     [Header("UI Images")]
     [SerializeField] Sprite numberCardBG;
@@ -30,14 +31,25 @@ public class CardSpawner : MonoBehaviour
 
     public List<GameObject> gameCards;
 
+    TurnHandler turnHandler;
+
     private void Awake()
     {
+        turnHandler = FindObjectOfType<TurnHandler>();
+
         for (int i = 0; i < numberCards.Length; i++)
         {
-            GameObject card = Instantiate(numberCardPrefab, UICanvas.transform);
+            GameObject card = Instantiate(numberCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "NumberCard_" + numberCards[i].color + "_" + numberCards[i].cardNumber;
+            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
             TextMeshProUGUI[] cardText = card.GetComponentsInChildren<TextMeshProUGUI>();
+
+            CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
+            valueSaver.cardType = CardValueSaver.CardType.number;
+            valueSaver.cardNumber = numberCards[i].cardNumber;
+            valueSaver.color = Enum.TryParse(numberCards[i].color.ToString(), out CardValueSaver.Color color);
+
             foreach (var text in cardText)
                 text.text = numberCards[i].cardNumber.ToString();
 
@@ -61,9 +73,10 @@ public class CardSpawner : MonoBehaviour
         }
         for (int i = 0; i < actionCards.Length; i++)
         {
-            GameObject card = Instantiate(actionCardPrefab, UICanvas.transform);
+            GameObject card = Instantiate(actionCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "ActionCard_" + actionCards[i].color + "_" + actionCards[i].type;
+            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
             switch (actionCards[i].color)
             {
                 case ActionCard.Color.red:
@@ -98,9 +111,10 @@ public class CardSpawner : MonoBehaviour
         }
         for (int i = 0; i < wildCards.Length; i++)
         {
-            GameObject card = Instantiate(wildCardPrefab, UICanvas.transform);
+            GameObject card = Instantiate(wildCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "WildCard_" + wildCards[i].type;
+            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
             switch (wildCards[i].type)
             {
                 case WildCard.Type.colorChange:

@@ -13,7 +13,12 @@ public class PlayerCardsDisplay : MonoBehaviour
     {
         turnHandler = FindObjectOfType<TurnHandler>();
 
-        int tempPos= 0;
+        DisplayPlayerCards();
+    }
+
+    public void DisplayPlayerCards()
+    {
+        int tempPos = 0;
         for (int i = 0; i < turnHandler.playerList[0].playerCards.Count; i++)
         {
             GameObject card = turnHandler.playerList[0].playerCards[i];

@@ -14,5 +14,4 @@ public class NumberCard : ScriptableObject
         yellow
     }
     public Color color;
-
 }

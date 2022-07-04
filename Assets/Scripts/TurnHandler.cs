@@ -1,14 +1,19 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using System.Threading.Tasks;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class TurnHandler : MonoBehaviour
 {
+    public TextMeshProUGUI winText;
+
     public GameObject[] UNOTexts;
 
     public Button[] colorButtons;
+
+    public GameObject winScreen;
 
     public Transform discardPilePos;
     public Transform cardDeckPos;
@@ -50,6 +55,7 @@ public class TurnHandler : MonoBehaviour
             button.gameObject.SetActive(false);
         }
 
+        winScreen.SetActive(false);
 
         //begin first turn for player 0
         SetActivePlayer(0);
@@ -107,33 +113,50 @@ public class TurnHandler : MonoBehaviour
 
         if (playable)
         {
-            if (reverse)
-                playerList.Reverse();
+            if (reverse) //for 2 players reverse just skips
+                skip = true;
 
             print("Played card");
+
+            hasPickedCard = false;
 
             ToDiscardPile(playedCard);
             playerList[activePlayer].playerCards.RemoveAt(currentIndex); //remove card from player
 
             CheckForUNO();
 
-            if (!skip)
+            if (!CheckForWin())
             {
-                //Give turn to other player (and disable the other players cards)
-                switch (activePlayer)
+                if (!skip)
                 {
-                    case 0:
-                        SetActivePlayer(1);
-                        break;
-                    case 1:
-                        SetActivePlayer(0);
-                        break;
-                    default:
-                        break;
+                    //Give turn to other player (and disable the other players cards)
+                    switch (activePlayer)
+                    {
+                        case 0:
+                            SetActivePlayer(1);
+                            break;
+                        case 1:
+                            SetActivePlayer(0);
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                else
+                    print("Skip");
             }
             else
-                print("Skip");
+            {
+                playerList[0].activeTurn = false;
+                playerList[1].activeTurn = false;
+
+                //disable player 1s cards
+                foreach (var card in playerList[0].playerCards)
+                    card.GetComponent<Button>().interactable = false;
+                foreach (var card in playerList[1].playerCards)
+                    card.GetComponent<Button>().interactable = false;
+            }
+
         }
         else
             print("Card not playable");
@@ -153,23 +176,106 @@ public class TurnHandler : MonoBehaviour
             UNOTexts[activePlayer].SetActive(true);
         else
             UNOTexts[activePlayer].SetActive(false);
+
+        print("Unocheck " + playerList[activePlayer].playerCards.Count);
     }
 
+    private bool CheckForWin()
+    {
+        if (playerList[activePlayer].playerCards.Count == 0)
+        {
+            winText.gameObject.SetActive(true);
+            winText.text = "Player " + (activePlayer + 1) + " wins!";
+
+            winScreen.SetActive(true);
+
+            return true;
+        }
+        print("Wincheck " + playerList[activePlayer].playerCards.Count);
+
+        return false;
+    }
+
+    bool hasPickedCard = false;
     public void PickCard()
     {
-        if (cardSpawner.gameCards.Count >= 1)
+        if (!hasPickedCard)
         {
-            playerList[activePlayer].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
-            cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
-            cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
+            if (cardSpawner.gameCards.Count >= 1)
+            {
+                playerList[activePlayer].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
+                cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
+                cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
 
-            CheckForUNO();
+                hasPickedCard = true;
+
+                CheckForUNO();
+            }
+            else if (discardPile.Count > 1)
+            {
+                for (int i = 0; i < discardPile.Count - 1; i++) //remove all cards from discard pile except at last position and add them to deck
+                {
+                    cardSpawner.gameCards.Add(discardPile[i].gameObject);
+                    discardPile.RemoveAt(i);
+                }
+
+                cardSpawner.Shuffle(cardSpawner.gameCards);
+
+                foreach (var card in cardSpawner.gameCards) //move shuffled cards offscreen
+                    card.transform.position = cardDeckPos.position;
+
+                PickCard(); //try to pick a card again
+            }
+            else
+            {
+                print("No cards left to take");
+            }
+        }
+
+        (bool playable, bool reverse, bool skip) = CheckPlayable(playerList[activePlayer].playerCards.Count - 1);
+
+        if (!playable) //only skip if not playable
+        {
+            switch (activePlayer)
+            {
+                case 0:
+                    SetActivePlayer(1);
+                    break;
+                case 1:
+                    SetActivePlayer(0);
+                    break;
+                default:
+                    break;
+            }
+
+            hasPickedCard = false;
+        }
+    }
+
+    private void DrawX(int count)
+    {
+        if (cardSpawner.gameCards.Count >= count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                switch (activePlayer)
+                {
+                    case 0:
+                        playerList[1].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
+                        break;
+                    case 1:
+                        playerList[0].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
+                        break;
+                }
+                
+                cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
+            }
+            cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
         }
         else if (discardPile.Count > 1)
         {
             for (int i = 0; i < discardPile.Count - 1; i++) //remove all cards from discard pile except at last position and add them to deck
             {
-                print(discardPile.Count);
                 cardSpawner.gameCards.Add(discardPile[i].gameObject);
                 discardPile.RemoveAt(i);
             }
@@ -179,23 +285,11 @@ public class TurnHandler : MonoBehaviour
             foreach (var card in cardSpawner.gameCards) //move shuffled cards offscreen
                 card.transform.position = cardDeckPos.position;
 
-            PickCard(); //try to pick a card again
+            DrawX(count); //try drawing cards again
         }
         else
         {
-            print("No cards left to take");
-        }
-
-        switch (activePlayer)
-        {
-            case 0:
-                SetActivePlayer(1);
-                break;
-            case 1:
-                SetActivePlayer(0);
-                break;
-            default:
-                break;
+            print("Not enough cards left to take");
         }
     }
 
@@ -247,11 +341,15 @@ public class TurnHandler : MonoBehaviour
                 //compare color
                 if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
                 {
-                    if(card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
                         return (true, true, false);
-                    if(card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
+                    else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
                         return (true, false, true);
-
+                    else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
+                    {
+                        DrawX(2);
+                        return (true, false, true);
+                    }
                 }
             }
             //if discardpile contains actioncard
@@ -264,6 +362,11 @@ public class TurnHandler : MonoBehaviour
                         return (true, true, false);
                     if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
                         return (true, false, true);
+                    else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
+                    {
+                        DrawX(2);
+                        return (true, false, true);
+                    }
                 }
                 //compare action
                 if (card.GetComponent<CardValueSaver>().actionType == discardTemp.GetComponent<CardValueSaver>().actionType)
@@ -272,6 +375,11 @@ public class TurnHandler : MonoBehaviour
                         return (true, true, false);
                     if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
                         return (true, false, true);
+                    else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
+                    {
+                        DrawX(2);
+                        return (true, false, true);
+                    }
                 }
             }
             //if discardpile contains wildcard
@@ -286,7 +394,7 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        //TODO: draw 2 cards
+                        DrawX(2);
                         return (true, false, true);
                     }
                 }
@@ -301,7 +409,7 @@ public class TurnHandler : MonoBehaviour
 
             if (card.GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.draw4)
             {
-                //TODO: draw 4 cards
+                DrawX(4);
                 return (true, false, true);
             }
 
@@ -354,5 +462,10 @@ public class TurnHandler : MonoBehaviour
                     break;
             }
         }
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

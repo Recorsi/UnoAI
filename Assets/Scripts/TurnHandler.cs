@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading.Tasks;
+using System.Collections;
 
 public class TurnHandler : MonoBehaviour
 {
+    public GameObject[] UNOTexts;
+
+    public Button[] colorButtons;
+
     public Transform discardPilePos;
+    public Transform cardDeckPos;
 
     public List<Player> playerList = new List<Player>();
 
@@ -33,15 +40,22 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        //put first card on discard pile
-        discardPile.Add(cardSpawner.gameCards[0]);
-        cardSpawner.gameCards[0].transform.position = discardPilePos.position;
+        //put last card in deck on discard pile
+        ToDiscardPile(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]);
+        cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
+
+        //hide color pick buttons
+        foreach (var button in colorButtons)
+        {
+            button.gameObject.SetActive(false);
+        }
+
 
         //begin first turn for player 0
-        setActivePlayer(0);  
+        SetActivePlayer(0);
     }
 
-    void setActivePlayer(int index)
+    void SetActivePlayer(int index)
     {
         switch (index)
         {
@@ -63,9 +77,9 @@ public class TurnHandler : MonoBehaviour
 
                 //disable player 0s cards
                 foreach (var card in playerList[0].playerCards)
-                    card.GetComponent<Button>().interactable = true;
-                foreach (var card in playerList[1].playerCards)
                     card.GetComponent<Button>().interactable = false;
+                foreach (var card in playerList[1].playerCards)
+                    card.GetComponent<Button>().interactable = true;
 
                 activePlayer = 1;
                 break;
@@ -89,98 +103,256 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        if (CheckPlayable(currentIndex))
-        {
-            print("played card");
+        (bool playable, bool reverse, bool skip) = CheckPlayable(currentIndex);
 
-            //Give turn to other player (and disable the other players cards)
-            switch (activePlayer)
+        if (playable)
+        {
+            if (reverse)
+                playerList.Reverse();
+
+            print("Played card");
+
+            ToDiscardPile(playedCard);
+            playerList[activePlayer].playerCards.RemoveAt(currentIndex); //remove card from player
+
+            CheckForUNO();
+
+            if (!skip)
             {
-                case 0:
-                    setActivePlayer(1);               
-                    break;
-                case 1:
-                    setActivePlayer(0);
-                    break;
-                default:
-                    break;
+                //Give turn to other player (and disable the other players cards)
+                switch (activePlayer)
+                {
+                    case 0:
+                        SetActivePlayer(1);
+                        break;
+                    case 1:
+                        SetActivePlayer(0);
+                        break;
+                    default:
+                        break;
+                }
             }
+            else
+                print("Skip");
         }
         else
             print("Card not playable");
     }
-    
-    private bool CheckPlayable(int index)
+
+    private void ToDiscardPile(GameObject card)
+    {
+        discardPile.Add(card);
+        card.transform.position = discardPilePos.position;
+        card.transform.parent = discardPilePos;
+        card.transform.SetAsLastSibling();
+    }
+
+    private void CheckForUNO()
+    {
+        if (playerList[activePlayer].playerCards.Count == 1)
+            UNOTexts[activePlayer].SetActive(true);
+        else
+            UNOTexts[activePlayer].SetActive(false);
+    }
+
+    public void PickCard()
+    {
+        if (cardSpawner.gameCards.Count >= 1)
+        {
+            playerList[activePlayer].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
+            cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
+            cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
+
+            CheckForUNO();
+        }
+        else if (discardPile.Count > 1)
+        {
+            for (int i = 0; i < discardPile.Count - 1; i++) //remove all cards from discard pile except at last position and add them to deck
+            {
+                print(discardPile.Count);
+                cardSpawner.gameCards.Add(discardPile[i].gameObject);
+                discardPile.RemoveAt(i);
+            }
+
+            cardSpawner.Shuffle(cardSpawner.gameCards);
+
+            foreach (var card in cardSpawner.gameCards) //move shuffled cards offscreen
+                card.transform.position = cardDeckPos.position;
+
+            PickCard(); //try to pick a card again
+        }
+        else
+        {
+            print("No cards left to take");
+        }
+
+        switch (activePlayer)
+        {
+            case 0:
+                SetActivePlayer(1);
+                break;
+            case 1:
+                SetActivePlayer(0);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private (bool, bool, bool) CheckPlayable(int index)
     {
         GameObject discardTemp = discardPile[discardPile.Count - 1];
 
         GameObject card = playerList[activePlayer].playerCards[index];
 
         //if card is number card
-        if (card.GetComponent<NumberCard>() != null)
+        if (card.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.number)
         {
+            int cardNumber = card.GetComponent<CardValueSaver>().cardNumber;
+
             //if discardpile contains numbercard
-            if (discardTemp.GetComponent<NumberCard>() != null)
+            if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.number)
             {
                 //compare cardnumber and color
-                if (card.GetComponent<NumberCard>().cardNumber == discardTemp.GetComponent<NumberCard>().cardNumber || card.GetComponent<NumberCard>().color == discardTemp.GetComponent<NumberCard>().color)
+                if (cardNumber == discardTemp.GetComponent<CardValueSaver>().cardNumber || card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
                 {
-                    return true;
+                    return (true, false, false);
                 }
             }
             //if discardpile contains actioncard
-            else if (discardTemp.GetComponent<ActionCard>() != null)
+            else if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.action)
             {
                 //compare color
-                if (card.GetComponent<NumberCard>().color.ToString() == discardTemp.GetComponent<ActionCard>().color.ToString())
+                if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
                 {
-                    return true;
+                    return (true, false, false);
                 }
             }
             //if discardpile contains wildcard
-            else if (discardTemp.GetComponent<WildCard>() != null)
+            else if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
             {
-                //TODO: Wildcard color pick values
+                //compare color
+                if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
+                {
+                    return (true, false, false);
+                }
             }
         }
         //if card is action card
-        else if (card.GetComponent<ActionCard>() != null)
+        else if (card.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.action)
         {
             //if discardpile contains numbercard
-            if (discardTemp.GetComponent<NumberCard>() != null)
+            if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.number)
             {
                 //compare color
-                if (card.GetComponent<ActionCard>().color.ToString() == discardTemp.GetComponent<NumberCard>().color.ToString())
+                if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
                 {
-                    return true;
+                    if(card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
+                        return (true, true, false);
+                    if(card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
+                        return (true, false, true);
+
                 }
             }
             //if discardpile contains actioncard
-            if (discardTemp.GetComponent<ActionCard>() != null)
+            if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.action)
             {
                 //compare color
-                if (card.GetComponent<ActionCard>().color.ToString() == discardTemp.GetComponent<ActionCard>().color.ToString())
+                if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
                 {
-                    return true;
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
+                        return (true, true, false);
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
+                        return (true, false, true);
                 }
                 //compare action
-                if (card.GetComponent<ActionCard>().type.ToString() == discardTemp.GetComponent<ActionCard>().type.ToString())
+                if (card.GetComponent<CardValueSaver>().actionType == discardTemp.GetComponent<CardValueSaver>().actionType)
                 {
-                    return true;
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
+                        return (true, true, false);
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
+                        return (true, false, true);
                 }
             }
             //if discardpile contains wildcard
-            else if (discardTemp.GetComponent<WildCard>() != null)
+            else if (discardTemp.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
             {
-                //TODO: Wildcard color pick values
+                //compare color
+                if (card.GetComponent<CardValueSaver>().color == discardTemp.GetComponent<CardValueSaver>().color)
+                {
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.reverse)
+                        return (true, true, false);
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.skip)
+                        return (true, false, true);
+                    if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
+                    {
+                        //TODO: draw 2 cards
+                        return (true, false, true);
+                    }
+                }
             }
         }
         //if card is wild card
-        else if (card.GetComponent<WildCard>() != null)
+        else if (card.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
         {
             //no check needed
-            return true;
+
+            StartCoroutine(PickWildcardColor(card));
+
+            if (card.GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.draw4)
+            {
+                //TODO: draw 4 cards
+                return (true, false, true);
+            }
+
+            return (true, false, false);
         }
-        return false;
+        return (false, false, false);
+    }
+
+    int colorID;
+
+    public void SetColorID(int id) //on button
+    {
+        colorID = id;
+    }
+
+    private IEnumerator PickWildcardColor(GameObject card)
+    {
+        //show color pick buttons 
+        foreach (var button in colorButtons)
+        {
+            button.gameObject.SetActive(true);
+        }
+
+        var waitForButton = new WaitForUIButtons(colorButtons);
+        yield return waitForButton.Reset();
+
+        if (waitForButton.PressedButton == colorButtons[0] || waitForButton.PressedButton == colorButtons[1] || waitForButton.PressedButton == colorButtons[2] || waitForButton.PressedButton == colorButtons[3])
+        {
+            //hide color pick buttons
+            foreach (var button in colorButtons)
+            {
+                button.gameObject.SetActive(false);
+            }
+
+            colorID = 0;
+
+            switch (colorID)
+            {
+                case 1: //red
+                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.red;
+                    break;
+                case 2: //green
+                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.green;
+                    break;
+                case 3: //blue
+                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.blue;
+                    break;
+                case 4: //yellow
+                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.yellow;
+                    break;
+            }
+        }
     }
 }

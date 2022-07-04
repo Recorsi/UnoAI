@@ -31,10 +31,10 @@ public class CardValueSaver : MonoBehaviour
     }
     public ActionType actionType;
 
-    public enum Type
+    public enum WildType
     {
         colorChange,
         draw4
     }
-    public Type type;
+    public WildType wildType;
 }

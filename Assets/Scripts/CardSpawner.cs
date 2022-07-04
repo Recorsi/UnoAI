@@ -45,10 +45,11 @@ public class CardSpawner : MonoBehaviour
             card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
             TextMeshProUGUI[] cardText = card.GetComponentsInChildren<TextMeshProUGUI>();
 
+            //Save card values for later use
             CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
             valueSaver.cardType = CardValueSaver.CardType.number;
             valueSaver.cardNumber = numberCards[i].cardNumber;
-            valueSaver.color = Enum.TryParse(numberCards[i].color.ToString(), out CardValueSaver.Color color);
+            valueSaver.color = (CardValueSaver.Color)Enum.Parse(typeof(CardValueSaver.Color), numberCards[i].color.ToString());
 
             foreach (var text in cardText)
                 text.text = numberCards[i].cardNumber.ToString();
@@ -77,6 +78,13 @@ public class CardSpawner : MonoBehaviour
             gameCards.Add(card);
             card.name = "ActionCard_" + actionCards[i].color + "_" + actionCards[i].type;
             card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
+
+            //Save card values for later use
+            CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
+            valueSaver.cardType = CardValueSaver.CardType.action;
+            valueSaver.color = (CardValueSaver.Color)Enum.Parse(typeof(CardValueSaver.Color), actionCards[i].color.ToString());
+            valueSaver.actionType = (CardValueSaver.ActionType)Enum.Parse(typeof(CardValueSaver.ActionType), actionCards[i].type.ToString());
+
             switch (actionCards[i].color)
             {
                 case ActionCard.Color.red:
@@ -115,6 +123,12 @@ public class CardSpawner : MonoBehaviour
             gameCards.Add(card);
             card.name = "WildCard_" + wildCards[i].type;
             card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
+
+            //Save card values for later use
+            CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
+            valueSaver.cardType = CardValueSaver.CardType.wild;
+            valueSaver.wildType = (CardValueSaver.WildType)Enum.Parse(typeof(CardValueSaver.WildType), wildCards[i].type.ToString());
+
             switch (wildCards[i].type)
             {
                 case WildCard.Type.colorChange:
@@ -129,15 +143,9 @@ public class CardSpawner : MonoBehaviour
         }
 
         Shuffle(gameCards);
-    }
 
-    private int tempCardIndex = 0;
-    public GameObject PickCard()
-    {
-        GameObject card = gameCards[tempCardIndex];
-        tempCardIndex++;
-
-        return card;
+        foreach (var card in gameCards) //move shuffled cards offscreen
+            card.transform.position = turnHandler.cardDeckPos.position;
     }
 
     public void Shuffle(List<GameObject> gos)
@@ -145,7 +153,7 @@ public class CardSpawner : MonoBehaviour
         for (int i = 0; i < gos.Count; i++)
         {
             GameObject temp = gos[i];
-            int randomIndex = Random.Range(i, gos.Count);
+            int randomIndex = UnityEngine.Random.Range(i, gos.Count);
             gos[i] = gos[randomIndex];
             gos[randomIndex] = temp;
         }

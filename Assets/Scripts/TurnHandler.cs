@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TurnHandler : MonoBehaviour
@@ -45,9 +44,27 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
+        cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
+
         //put last card in deck on discard pile
-        ToDiscardPile(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]);
-        cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
+        int tempIndex = cardSpawner.gameCards.Count - 1;
+        ToDiscardPile(cardSpawner.gameCards[tempIndex]);
+        cardSpawner.gameCards.RemoveAt(tempIndex);
+
+        if (discardPile[0].GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.action)
+        {
+            if (discardPile[0].GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
+                DrawX(2);
+
+            SwitchActivePlayer();
+        }
+        else if (discardPile[0].GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
+        {
+            if (discardPile[0].GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.draw4)
+                DrawX(4);
+
+            StartCoroutine(PickWildcardColor(discardPile[0]));
+        }
 
         //hide color pick buttons
         foreach (var button in colorButtons)
@@ -96,6 +113,21 @@ public class TurnHandler : MonoBehaviour
         print("Player " + (activePlayer + 1) + "'s turn");
     }
 
+    void SwitchActivePlayer()
+    {
+        switch (activePlayer)
+        {
+            case 0:
+                SetActivePlayer(1);
+                break;
+            case 1:
+                SetActivePlayer(0);
+                break;
+            default:
+                break;
+        }
+    }
+
     //On card button
     public void PlayCard(GameObject playedCard)
     {
@@ -109,13 +141,10 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        (bool playable, bool reverse, bool skip) = CheckPlayable(currentIndex);
+        (bool playable, bool reverse, bool skip) = CheckPlayable(currentIndex, true);
 
         if (playable)
         {
-            if (reverse) //for 2 players reverse just skips
-                skip = true;
-
             print("Played card");
 
             hasPickedCard = false;
@@ -123,29 +152,21 @@ public class TurnHandler : MonoBehaviour
             ToDiscardPile(playedCard);
             playerList[activePlayer].playerCards.RemoveAt(currentIndex); //remove card from player
 
-            CheckForUNO();
+            if (reverse) //for 2 players reverse just skips
+                skip = true;
 
+            CheckForUNO();
             if (!CheckForWin())
             {
                 if (!skip)
                 {
                     //Give turn to other player (and disable the other players cards)
-                    switch (activePlayer)
-                    {
-                        case 0:
-                            SetActivePlayer(1);
-                            break;
-                        case 1:
-                            SetActivePlayer(0);
-                            break;
-                        default:
-                            break;
-                    }
+                    SwitchActivePlayer();
                 }
                 else
                     print("Skip");
             }
-            else
+            else //if activeplayer won
             {
                 playerList[0].activeTurn = false;
                 playerList[1].activeTurn = false;
@@ -176,8 +197,6 @@ public class TurnHandler : MonoBehaviour
             UNOTexts[activePlayer].SetActive(true);
         else
             UNOTexts[activePlayer].SetActive(false);
-
-        print("Unocheck " + playerList[activePlayer].playerCards.Count);
     }
 
     private bool CheckForWin()
@@ -191,7 +210,6 @@ public class TurnHandler : MonoBehaviour
 
             return true;
         }
-        print("Wincheck " + playerList[activePlayer].playerCards.Count);
 
         return false;
     }
@@ -232,21 +250,11 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        (bool playable, bool reverse, bool skip) = CheckPlayable(playerList[activePlayer].playerCards.Count - 1);
+        (bool playable, bool reverse, bool skip) = CheckPlayable(playerList[activePlayer].playerCards.Count - 1, false);
 
         if (!playable) //only skip if not playable
         {
-            switch (activePlayer)
-            {
-                case 0:
-                    SetActivePlayer(1);
-                    break;
-                case 1:
-                    SetActivePlayer(0);
-                    break;
-                default:
-                    break;
-            }
+            SwitchActivePlayer();
 
             hasPickedCard = false;
         }
@@ -293,7 +301,7 @@ public class TurnHandler : MonoBehaviour
         }
     }
 
-    private (bool, bool, bool) CheckPlayable(int index)
+    private (bool playable, bool reverse, bool skip) CheckPlayable(int index, bool executeActions)
     {
         GameObject discardTemp = discardPile[discardPile.Count - 1];
 
@@ -347,7 +355,9 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        DrawX(2);
+                        if(executeActions)
+                            DrawX(2);
+
                         return (true, false, true);
                     }
                 }
@@ -364,7 +374,9 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        DrawX(2);
+                        if (executeActions)
+                            DrawX(2);
+
                         return (true, false, true);
                     }
                 }
@@ -377,7 +389,9 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        DrawX(2);
+                        if (executeActions)
+                            DrawX(2);
+
                         return (true, false, true);
                     }
                 }
@@ -394,7 +408,9 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        DrawX(2);
+                        if (executeActions)
+                            DrawX(2);
+
                         return (true, false, true);
                     }
                 }
@@ -403,17 +419,19 @@ public class TurnHandler : MonoBehaviour
         //if card is wild card
         else if (card.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
         {
-            //no check needed
-
-            StartCoroutine(PickWildcardColor(card));
+            if (executeActions)
+                StartCoroutine(PickWildcardColor(card));
 
             if (card.GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.draw4)
             {
-                DrawX(4);
+                if (executeActions)
+                    DrawX(4);
+
                 return (true, false, true);
             }
+            else if (card.GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.colorChange)
+                return (true, false, false);
 
-            return (true, false, false);
         }
         return (false, false, false);
     }
@@ -436,6 +454,8 @@ public class TurnHandler : MonoBehaviour
         var waitForButton = new WaitForUIButtons(colorButtons);
         yield return waitForButton.Reset();
 
+        //colorID = 0;
+
         if (waitForButton.PressedButton == colorButtons[0] || waitForButton.PressedButton == colorButtons[1] || waitForButton.PressedButton == colorButtons[2] || waitForButton.PressedButton == colorButtons[3])
         {
             //hide color pick buttons
@@ -443,8 +463,6 @@ public class TurnHandler : MonoBehaviour
             {
                 button.gameObject.SetActive(false);
             }
-
-            colorID = 0;
 
             switch (colorID)
             {
@@ -462,10 +480,5 @@ public class TurnHandler : MonoBehaviour
                     break;
             }
         }
-    }
-
-    public void RestartGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

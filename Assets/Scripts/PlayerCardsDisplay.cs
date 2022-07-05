@@ -12,8 +12,6 @@ public class PlayerCardsDisplay : MonoBehaviour
     private void Start()
     {
         turnHandler = FindObjectOfType<TurnHandler>();
-
-        DisplayPlayerCards();
     }
 
     public void DisplayPlayerCards()
@@ -24,6 +22,7 @@ public class PlayerCardsDisplay : MonoBehaviour
             GameObject card = turnHandler.playerList[0].playerCards[i];
             card.transform.position = player0InitialPos.position + new Vector3(tempPos, 0, 0);
             card.transform.parent = player0InitialPos;
+            card.transform.SetSiblingIndex(i);
             tempPos += 60;
         }
         tempPos = 0;
@@ -32,6 +31,7 @@ public class PlayerCardsDisplay : MonoBehaviour
             GameObject card = turnHandler.playerList[1].playerCards[i];
             card.transform.position = player1InitialPos.position + new Vector3(tempPos, 0, 0);
             card.transform.parent = player1InitialPos;
+            card.transform.SetSiblingIndex(i);
             tempPos += 60;
         }
     }

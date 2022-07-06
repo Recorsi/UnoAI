@@ -9,6 +9,7 @@ public class TurnHandler : MonoBehaviour
     public TextMeshProUGUI winText;
 
     public GameObject[] UNOTexts;
+    public BaysProb probabilty = new BaysProb();
 
     public Button[] colorButtons;
 
@@ -44,6 +45,7 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
+        probabilty.makeInitalGuess(playerList[activePlayer].playerCards);
         //insertThisLogic
         //playerList[activePlayer].playerCards[index]
         //

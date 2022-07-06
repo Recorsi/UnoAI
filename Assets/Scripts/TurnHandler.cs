@@ -44,6 +44,10 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
+        //insertThisLogic
+        //playerList[activePlayer].playerCards[index]
+        //
+
         cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
 
         //put last card in deck on discard pile
@@ -119,6 +123,7 @@ public class TurnHandler : MonoBehaviour
         {
             case 0:
                 SetActivePlayer(1);
+                AiTurn();
                 break;
             case 1:
                 SetActivePlayer(0);
@@ -126,6 +131,12 @@ public class TurnHandler : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    private void AiTurn()
+    {
+        //logic to decide card
+        //PlayCard(playedCard);
     }
 
     //On card button
@@ -145,6 +156,9 @@ public class TurnHandler : MonoBehaviour
 
         if (playable)
         {
+            //insert some logic did we assume correct card
+            //
+
             print("Played card");
 
             hasPickedCard = false;
@@ -217,6 +231,9 @@ public class TurnHandler : MonoBehaviour
     bool hasPickedCard = false;
     public void PickCard()
     {
+        //insert some logic
+        //
+
         if (!hasPickedCard)
         {
             if (cardSpawner.gameCards.Count >= 1)

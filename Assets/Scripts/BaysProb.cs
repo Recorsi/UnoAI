@@ -48,7 +48,6 @@ public class BaysProb
         }
         return (personal / total);
     }
-
     double chanceOfDrawingColor(int colorNum)
     {
         double total = 0;
@@ -57,7 +56,6 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
-
     double chanceOfDrawingNum()
     {
         double total = 0;
@@ -77,7 +75,6 @@ public class BaysProb
     {
         return (double) AllCards[group][card]/ (double) AllCards[group].Sum();
     }
-
     double chanceOfDrawingSpecial()
     {
         double total = 0;
@@ -94,8 +91,7 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
-
-    double chanceOfDrawingSpecialColor(int i)
+    double chanceOfDrawingSpecialGivenColor(int i)
     {
         double total = AllCards[i].Sum();
         double personal = 0;
@@ -107,8 +103,7 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
-
-    double chanceOfDrawingNumColor(int i)
+    double chanceOfDrawingNumGivenColor(int i)
     {
         double total = AllCards[i].Sum();
         double personal = 0;
@@ -119,7 +114,6 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
-
     void predictACard()
     {
         int cardColor = 0;
@@ -132,10 +126,10 @@ public class BaysProb
         {
             for (int i = 0; i < AllCards.Length; i++)
             {
-                if (cardColorChance < chanceOfDrawingColor(i) * chanceOfDrawingSpecialColor(i))
+                if (cardColorChance < chanceOfDrawingColor(i) * chanceOfDrawingSpecialGivenColor(i))
                 {
                     cardColor = i;
-                    cardColorChance = chanceOfDrawingColor(i) * chanceOfDrawingSpecialColor(i);
+                    cardColorChance = chanceOfDrawingColor(i) * chanceOfDrawingSpecialGivenColor(i);
                 }
             }
             if (cardColor < 4)
@@ -170,10 +164,10 @@ public class BaysProb
 
             for (int i = 0; i < AllCards.Length - 1; i++)
             {
-                if (cardColorChance < chanceOfDrawingColor(i) * chanceOfDrawingNumColor(i))
+                if (cardColorChance < chanceOfDrawingColor(i) * chanceOfDrawingNumGivenColor(i))
                 {
                     cardColor = i;
-                    cardColorChance = chanceOfDrawingColor(i) * chanceOfDrawingNumColor(i);
+                    cardColorChance = chanceOfDrawingColor(i) * chanceOfDrawingNumGivenColor(i);
                 }
             }
             for (int i = 0; i < 10; i++)
@@ -192,7 +186,6 @@ public class BaysProb
         AllCards[cardColor][cardNum]--;
 
     }
-
     public void makeInitalGuess(List<GameObject> myCards)
     {
         Debug.Log("Bays initial idea");
@@ -203,54 +196,55 @@ public class BaysProb
             predictACard();
         }
     }
-
     private void arrangeMyCards(List<GameObject> myCards)
     {
         foreach (GameObject card in myCards)
         {
-            CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
-
-            //Figure out if it is a special
-            if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
-            {
-                if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
-                {
-                    AllCards[4][1]--;
-                }
-                else
-                {
-                    AllCards[4][0]--;
-                }
-                continue;
-            }
-            
-            removeCardFromGroup(giveColorIntCode(cardValues), cardValues);
+            addACardToAIDeck(card);
         }
     }
-
     private void removeCardFromGroup(int group, CardValueSaver cardValues)
     {
+        int index = -1;
+
         if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
         {
-            AllCards[group][cardValues.cardNumber]--;
+            index = cardValues.cardNumber;
         }
         if (cardValues.cardType.Equals(CardValueSaver.CardType.action))
         {
             if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
             {
-                AllCards[group][10]--;
+                index = 10;
             }
             if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
             {
-                AllCards[group][11]--;
+                index = 11;
             }
             if (cardValues.actionType.Equals(CardValueSaver.ActionType.draw2))
             {
-                AllCards[group][12]--;
+                index = 12;
+            }
+
+        }
+
+        if (index != -1)
+        {
+            if (AllCards[group][index] == 0)
+            {
+                updateBelif(new int[] { group, index });
+            }
+            else
+            {
+                AllCards[group][index]--;
             }
         }
+        else
+        {
+            Debug.Log("Card does not exist in group");
+        }
+        
     }
-
     public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable)
     {
         CardValueSaver tableCardValues = cardOnTable.GetComponent<CardValueSaver>();
@@ -294,7 +288,60 @@ public class BaysProb
 
         return bestCard;
     }
+    public void addACardToAIDeck(GameObject card)
+    {
+        CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
+        //Figure out if it is a special
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            int index;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
+            {
+                index = 1;
+            }
+            else
+            {
+                index = 0;
+            }
+
+            if (AllCards[4][index] == 0)
+            {
+                updateBelif(new int[] {4,index });
+            }
+            else
+            {
+                AllCards[4][index]--;
+            }
+            return;
+        }
+
+        removeCardFromGroup(giveColorIntCode(cardValues), cardValues);
+    }
+    private void updateBelif(int[] cardIndex)
+    {
+        bool foundCard = false;
+
+        foreach (BaysCards card in EnemyDeck)
+        {
+            if (card.color == cardIndex[0] && card.num == cardIndex[1])
+            {
+                foundCard = true;
+                Debug.Log("O i thought you had that");
+                EnemyDeck.Remove(card);
+            }
+        }
+
+        if (foundCard)
+        {
+            predictACard();
+        }
+        else
+        {
+            Debug.Log("==========================================================================");
+            Debug.Log("Fatal error bays has lost track of the cards");
+        }
+    }
     private double colorValueForEnemy(GameObject card)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();

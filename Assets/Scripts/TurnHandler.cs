@@ -152,6 +152,7 @@ public class TurnHandler : MonoBehaviour
             else
             {
                 PickCard();
+                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count-1]);
                 AiTurn();
             }
             //logic to decide card

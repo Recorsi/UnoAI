@@ -135,10 +135,29 @@ public class TurnHandler : MonoBehaviour
         }
     }
 
+
     private void AiTurn()
     {
-        //logic to decide card
-        //PlayCard(playedCard);
+        if (playerList[1].activeTurn == true)
+        {
+            GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1]);
+            if (playCard != null)
+            {
+                PlayCard(playCard);
+                if (playCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.action))//since all actions gives you another turn...
+                {
+                    AiTurn();
+                }
+            }
+            else
+            {
+                PickCard();
+                AiTurn();
+            }
+            //logic to decide card
+            //PlayCard(playedCard);
+        }
+
     }
 
     //On card button

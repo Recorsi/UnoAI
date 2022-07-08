@@ -45,7 +45,7 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        probabilty.makeInitalGuess(playerList[activePlayer].playerCards);
+        probabilty.makeInitalGuess(playerList[1].playerCards);
         //insertThisLogic
         //playerList[activePlayer].playerCards[index]
         //
@@ -140,6 +140,8 @@ public class TurnHandler : MonoBehaviour
     {
         if (playerList[1].activeTurn == true)
         {
+            //probabilty.showEntireArrayStructure();
+
             GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1]);
             if (playCard != null)
             {
@@ -253,8 +255,6 @@ public class TurnHandler : MonoBehaviour
     bool hasPickedCard = false;
     public void PickCard()
     {
-        //insert some logic
-        //
 
         if (!hasPickedCard)
         {
@@ -293,6 +293,10 @@ public class TurnHandler : MonoBehaviour
 
         if (!playable) //only skip if not playable
         {
+            if (playerList[0].activeTurn == true)//AI wants to guess what card it was then
+            {
+                probabilty.enemyDrewCardInsteadOfPlay(discardPile[discardPile.Count - 1]);
+            }
             SwitchActivePlayer();
 
             hasPickedCard = false;

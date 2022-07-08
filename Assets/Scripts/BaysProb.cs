@@ -114,6 +114,80 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
+    int mostProbabolNumGivenColorAndNOTNum(int color, int num)
+    {
+        double mostLikely = 0;
+        double thatSum = AllCards[color].Sum();
+        int res = 0;
+        for (int i = 0; i < AllCards[color].Length; i++)
+        {
+            if (i != num && AllCards[color][i] / thatSum > mostLikely)
+            {
+                mostLikely = AllCards[color][i] / AllCards[color].Sum();
+                res = i;
+            }
+        }
+        return res;
+    }
+    int mostProbebolColorGivenNOTColor(int color)
+    {
+        double mostLikely = 0;
+        int res = 0;
+        for(int i = 0; i < AllCards.Length-1; i++)//-1 cus wild will always work
+        {
+            if (i != color && chanceOfDrawingColor(i) > mostLikely)
+            {
+                mostLikely = chanceOfDrawingColor(i);
+                res = i;
+            }
+        }
+        return res;
+    }
+    public void enemyDrewCardInsteadOfPlay(GameObject cardOnTable)
+    {
+        CardValueSaver cardOnTableValues = cardOnTable.GetComponent<CardValueSaver>();
+        int color = mostProbebolColorGivenNOTColor(giveColorIntCode(cardOnTableValues));
+        int num = 0;
+        if (cardOnTableValues.cardType.Equals(CardValueSaver.CardType.wild))//special case when card was wild
+        {
+            
+        }
+        else
+        {
+            if (cardOnTableValues.cardType.Equals(CardValueSaver.CardType.number))
+            {
+                num = mostProbabolNumGivenColorAndNOTNum(color, cardOnTableValues.cardNumber);
+            }
+            else
+            {
+                if (cardOnTableValues.actionType.Equals(CardValueSaver.ActionType.skip))
+                {
+                    num = mostProbabolNumGivenColorAndNOTNum(color, 10);
+                }
+                if (cardOnTableValues.actionType.Equals(CardValueSaver.ActionType.reverse))
+                {
+                    num = mostProbabolNumGivenColorAndNOTNum(color, 11);
+                }
+                if (cardOnTableValues.actionType.Equals(CardValueSaver.ActionType.draw2))
+                {
+                    num = mostProbabolNumGivenColorAndNOTNum(color, 12);
+                }
+            }
+        }
+
+        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCardInGroup(color,num)));
+        if (AllCards[color][num] > 0)
+        {
+            AllCards[color][num]--;
+        }
+        else
+        {
+            Debug.Log("Critical problem lost track of cards");
+        }
+
+        Debug.Log("its color: " + color);
+        Debug.Log("its num: " + num);
+    }
     void predictACard()
     {
         int cardColor = 0;
@@ -340,6 +414,7 @@ public class BaysProb
         {
             Debug.Log("==========================================================================");
             Debug.Log("Fatal error bays has lost track of the cards");
+            Debug.Log(cardIndex[0] + " "+ cardIndex[1]);
         }
     }
     private double colorValueForEnemy(GameObject card)
@@ -441,6 +516,24 @@ public class BaysProb
             return 3;
         }
         throw new Exception("bays could not identify the color of a given card :(");
+    }
+
+
+
+
+    //debug functions
+    public void showEntireArrayStructure()
+    {
+        Debug.Log("0,1,2,3,4,5,6,7,8,9,skip,reverse,+1");
+        foreach (int[] cards in AllCards)
+        {
+            if (cards.Length > 2)
+            {
+                Debug.Log(cards[0] + ", " + cards[1] + ", " + cards[2] + ", " + cards[3] + ", " + cards[4] + ", " + cards[5] + ", " + cards[6] + ", " + cards[7] + ", " + cards[8] + ", " + cards[9] + ", " + cards[10] + ", " + cards[11] + ", " + cards[12]);
+                continue;
+            }
+            Debug.Log(cards[0] + ", " + cards[1]);
+        }
     }
 }
 

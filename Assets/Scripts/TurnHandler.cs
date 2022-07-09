@@ -146,7 +146,7 @@ public class TurnHandler : MonoBehaviour
             if (playCard != null)
             {
                 PlayCard(playCard);
-                if (playCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.action))//since all actions gives you another turn...
+                if (playCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.action) || playCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))//since all actions gives you another turn...
                 {
                     AiTurn();
                 }
@@ -469,7 +469,10 @@ public class TurnHandler : MonoBehaviour
         else if (card.GetComponent<CardValueSaver>().cardType == CardValueSaver.CardType.wild)
         {
             if (executeActions)
-                StartCoroutine(PickWildcardColor(card));
+                if (activePlayer == 0)
+                {
+                    StartCoroutine(PickWildcardColor(card));
+                }
 
             if (card.GetComponent<CardValueSaver>().wildType == CardValueSaver.WildType.draw4)
             {

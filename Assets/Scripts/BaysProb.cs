@@ -344,6 +344,13 @@ public class BaysProb
         //^special case^ if we only have one card to play just play that!
         if (playbleCards.Count == 1)
         {
+            //simple logic for wild cards
+            if (playbleCards[0].GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
+            {
+                playbleCards[0].GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
+                Debug.Log("i pick color: " + whatColorDoWeHaveMostOf(myCards));
+            }
+
             return playbleCards[0];
         }
 
@@ -360,11 +367,64 @@ public class BaysProb
             }
         }
 
+        //simple logic for wild cards
+        if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            bestCard.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
+            Debug.Log("i pick color: " + whatColorDoWeHaveMostOf(myCards));
+        }
+
         Debug.Log("best color would be: " + bestCard.GetComponent<CardValueSaver>().color);
         Debug.Log("with type: " + bestCard.GetComponent<CardValueSaver>().cardType);
         Debug.Log("prob of: " + currentBest);
 
         return bestCard;
+    }
+    private CardValueSaver.Color whatColorDoWeHaveMostOf(List<GameObject> myCards)
+    {
+        int countR = 0;
+        int countG = 0;
+        int countB = 0;
+        int countY = 0;
+
+        foreach (GameObject card in myCards)
+        {
+            CardValueSaver CardValues = card.GetComponent<CardValueSaver>();
+
+            if (CardValues.color.Equals(CardValueSaver.Color.yellow))
+            {
+                countY++;
+            }
+            if (CardValues.color.Equals(CardValueSaver.Color.blue))
+            {
+                countB++;
+            }
+            if (CardValues.color.Equals(CardValueSaver.Color.green))
+            {
+                countG++;
+            }
+            if (CardValues.color.Equals(CardValueSaver.Color.red))
+            {
+                countR++;
+            }
+        }
+
+        if (countR > countG && countR > countB && countR > countY)
+        {
+            return CardValueSaver.Color.red;
+        }
+        if (countG > countR && countG > countB && countG > countY)
+        {
+            return CardValueSaver.Color.green;
+        }
+        if (countB > countG && countB > countR && countB > countY)
+        {
+            return CardValueSaver.Color.blue;
+        }
+        else
+        {
+            return CardValueSaver.Color.yellow;
+        }
     }
     public void addACardToAIDeck(GameObject card, bool otherPlaydIt)
     {

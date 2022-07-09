@@ -188,7 +188,7 @@ public class BaysProb
         Debug.Log("its color: " + color);
         Debug.Log("its num: " + num);
     }
-    void predictACard()
+    public void predictACard()
     {
         int cardColor = 0;
         double cardColorChance = 0;
@@ -274,10 +274,10 @@ public class BaysProb
     {
         foreach (GameObject card in myCards)
         {
-            addACardToAIDeck(card);
+            addACardToAIDeck(card, false);
         }
     }
-    private void removeCardFromGroup(int group, CardValueSaver cardValues)
+    private void removeCardFromGroup(int group, CardValueSaver cardValues, bool otherPlaydIt)
     {
         int index = -1;
 
@@ -306,11 +306,15 @@ public class BaysProb
         {
             if (AllCards[group][index] == 0)
             {
-                updateBelif(new int[] { group, index });
+                updateBelif(new int[] { group, index }, otherPlaydIt);
             }
             else
             {
                 AllCards[group][index]--;
+                if (otherPlaydIt)
+                {
+                    updateBelif(new int[] { 4, index }, otherPlaydIt);
+                }
             }
         }
         else
@@ -362,7 +366,7 @@ public class BaysProb
 
         return bestCard;
     }
-    public void addACardToAIDeck(GameObject card)
+    public void addACardToAIDeck(GameObject card, bool otherPlaydIt)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
@@ -381,34 +385,58 @@ public class BaysProb
 
             if (AllCards[4][index] == 0)
             {
-                updateBelif(new int[] {4,index });
+                updateBelif(new int[] {4,index }, otherPlaydIt);
             }
             else
             {
                 AllCards[4][index]--;
+                if (otherPlaydIt)
+                {
+                    updateBelif(new int[] { 4, index }, otherPlaydIt);
+                }
             }
             return;
         }
 
-        removeCardFromGroup(giveColorIntCode(cardValues), cardValues);
+        removeCardFromGroup(giveColorIntCode(cardValues), cardValues, otherPlaydIt);
     }
-    private void updateBelif(int[] cardIndex)
+    public void updateBelif(int[] cardIndex, bool otherPlaydIt)
     {
         bool foundCard = false;
+        double leastLikely = Math.Log(100);//we use log because of the classic decimal issue in CS
+        int cardR = -1;
 
-        foreach (BaysCards card in EnemyDeck)
+        for (int i = 0; i < EnemyDeck.Count; i++)
         {
-            if (card.color == cardIndex[0] && card.num == cardIndex[1])
+            if (leastLikely > Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb))
             {
+                leastLikely = Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb);
+                cardR = i;
+            }
+
+            if (EnemyDeck[i].color == cardIndex[0] && EnemyDeck[i].num == cardIndex[1])
+            {
+
                 foundCard = true;
-                Debug.Log("O i thought you had that");
-                EnemyDeck.Remove(card);
+                if (otherPlaydIt)
+                {
+                    Debug.Log("Yea i knew you had that");
+                }
+                else
+                {
+                    Debug.Log("O i thought you had that");
+                }
+                EnemyDeck.RemoveAt(i);
             }
         }
 
-        if (foundCard)
+        if (foundCard && !otherPlaydIt)
         {
             predictACard();
+        }
+        else if (otherPlaydIt && cardR != -1)
+        {
+            EnemyDeck.RemoveAt(cardR);
         }
         else
         {

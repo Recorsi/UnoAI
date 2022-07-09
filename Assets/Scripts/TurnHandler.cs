@@ -154,7 +154,7 @@ public class TurnHandler : MonoBehaviour
             else
             {
                 PickCard();
-                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count-1]);
+                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count-1], false);
                 AiTurn();
             }
             //logic to decide card
@@ -180,7 +180,11 @@ public class TurnHandler : MonoBehaviour
 
         if (playable)
         {
-            //insert some logic did we assume correct card
+            //Did AI assume correct card
+            if (activePlayer == 0)
+            {
+                probabilty.addACardToAIDeck(playedCard, true);
+            }
             //
 
             print("Played card");
@@ -316,6 +320,8 @@ public class TurnHandler : MonoBehaviour
                         break;
                     case 1:
                         playerList[0].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
+                        Debug.Log("ill guess now");
+                        probabilty.predictACard();//let the AI guess what card human got
                         break;
                 }
                 

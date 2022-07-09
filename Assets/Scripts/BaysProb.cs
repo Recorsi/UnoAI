@@ -263,6 +263,12 @@ public class BaysProb
     public void makeInitalGuess(List<GameObject> myCards)
     {
         Debug.Log("Bays initial idea");
+        AllCards[0] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[2] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[3] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[4] = new int[] { 4, 4 };
+
         arrangeMyCards(myCards);
 
         for(int i = 0; i < 7; i++)
@@ -605,7 +611,21 @@ public class BaysProb
         }
         throw new Exception("bays could not identify the color of a given card :(");
     }
+    public void shuffleCardsUpdate(List<GameObject> myCards)
+    {
+        AllCards[0] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[2] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[3] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+        AllCards[4] = new int[] { 4, 4};
 
+        arrangeMyCards(myCards);
+
+        foreach(BaysCards card in EnemyDeck)
+        {
+            AllCards[card.color][card.num]--;
+        }
+    }
 
 
 

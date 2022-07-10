@@ -39,18 +39,15 @@ public class CardSpawner : MonoBehaviour
 
     public List<GameObject> gameCards;
 
-    TurnHandler turnHandler;
-
     private void Awake()
     {
-        turnHandler = FindObjectOfType<TurnHandler>();
 
         for (int i = 0; i < numberCards.Length; i++)
         {
             GameObject card = Instantiate(numberCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "NumberCard_" + numberCards[i].color + "_" + numberCards[i].cardNumber;
-            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
+            card.GetComponent<Button>().onClick.AddListener(() => TurnHandler.Instance.PlayCard(card));
             TextMeshProUGUI[] cardText = card.GetComponentsInChildren<TextMeshProUGUI>();
 
             //Save card values for later use
@@ -85,7 +82,7 @@ public class CardSpawner : MonoBehaviour
             GameObject card = Instantiate(actionCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "ActionCard_" + actionCards[i].color + "_" + actionCards[i].type;
-            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
+            card.GetComponent<Button>().onClick.AddListener(() => TurnHandler.Instance.PlayCard(card));
 
             //Save card values for later use
             CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
@@ -132,7 +129,7 @@ public class CardSpawner : MonoBehaviour
             GameObject card = Instantiate(wildCardPrefab, parentObj.transform);
             gameCards.Add(card);
             card.name = "WildCard_" + wildCards[i].type;
-            card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
+            card.GetComponent<Button>().onClick.AddListener(() => TurnHandler.Instance.PlayCard(card));
 
             card.GetComponent<Image>().color = blackColor;
 
@@ -158,7 +155,7 @@ public class CardSpawner : MonoBehaviour
         Shuffle(gameCards);
 
         foreach (var card in gameCards) //move shuffled cards offscreen
-            card.transform.position = turnHandler.cardDeckPos.position;
+            card.transform.position = TurnHandler.Instance.cardDeckPos.position;
     }
 
     public void Shuffle(List<GameObject> gos)

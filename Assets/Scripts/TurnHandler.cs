@@ -28,6 +28,22 @@ public class TurnHandler : MonoBehaviour
 
     bool awaitPlayColorChoice = false;
     int activePlayer = 0;
+
+    private static TurnHandler _instance;
+
+    public static TurnHandler Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = GameObject.FindObjectOfType<TurnHandler>();
+            }
+
+            return _instance;
+        }
+    }
+
     void Start()
     {
         cardSpawner = FindObjectOfType<CardSpawner>();
@@ -264,7 +280,6 @@ public class TurnHandler : MonoBehaviour
     bool hasPickedCard = false;
     public void PickCard()
     {
-
         if (!hasPickedCard)
         {
             if (cardSpawner.gameCards.Count >= 1)
@@ -274,6 +289,8 @@ public class TurnHandler : MonoBehaviour
                 cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
 
                 hasPickedCard = true;
+
+                print("picked card");
 
                 CheckForUNO();
             }
@@ -528,30 +545,36 @@ public class TurnHandler : MonoBehaviour
                 button.gameObject.SetActive(false);
             }
 
-            switch (colorID)
-            {
-                case 1: //red
-                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.red;
-                    card.GetComponent<Image>().color = cardSpawner.redColor;
-                    break;
-                case 2: //green
-                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.green;
-                    card.GetComponent<Image>().color = cardSpawner.greenColor;
-                    break;
-                case 3: //blue
-                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.blue;
-                    card.GetComponent<Image>().color = cardSpawner.blueColor;
-                    break;
-                case 4: //yellow
-                    card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.yellow;
-                    card.GetComponent<Image>().color = cardSpawner.yellowColor;
-                    break;
-            }
+            SetWildCardColor(card, colorID);
+
             if (card.GetComponent<CardValueSaver>().wildType.Equals(CardValueSaver.WildType.colorChange))
             {
                 awaitPlayColorChoice = false;
                 SwitchActivePlayer();
             }
+        }
+    }
+
+    public void SetWildCardColor(GameObject card, int colorID)
+    {
+        switch (colorID)
+        {
+            case 1: //red
+                card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.red;
+                card.GetComponent<Image>().color = cardSpawner.redColor;
+                break;
+            case 2: //green
+                card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.green;
+                card.GetComponent<Image>().color = cardSpawner.greenColor;
+                break;
+            case 3: //blue
+                card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.blue;
+                card.GetComponent<Image>().color = cardSpawner.blueColor;
+                break;
+            case 4: //yellow
+                card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.yellow;
+                card.GetComponent<Image>().color = cardSpawner.yellowColor;
+                break;
         }
     }
 }

@@ -7,6 +7,14 @@ using System;
 
 public class CardSpawner : MonoBehaviour
 {
+    [Header("Card Colors")]
+    public Color blackColor;
+    public Color redColor;
+    public Color greenColor;
+    public Color blueColor;
+    public Color yellowColor;
+    [Space]
+
     [SerializeField] GameObject parentObj;
 
     [Header("UI Images")]
@@ -57,16 +65,16 @@ public class CardSpawner : MonoBehaviour
             switch (numberCards[i].color)
             {
                 case NumberCard.Color.red:
-                    card.GetComponent<Image>().color = Color.red;
+                    card.GetComponent<Image>().color = redColor;
                     break;
                 case NumberCard.Color.green:
-                    card.GetComponent<Image>().color = Color.green;
+                    card.GetComponent<Image>().color = greenColor;
                     break;
                 case NumberCard.Color.blue:
-                    card.GetComponent<Image>().color = Color.blue;
+                    card.GetComponent<Image>().color = blueColor;
                     break;
                 case NumberCard.Color.yellow:
-                    card.GetComponent<Image>().color = Color.yellow;
+                    card.GetComponent<Image>().color = yellowColor;
                     break;
                 default:
                     break;
@@ -88,16 +96,16 @@ public class CardSpawner : MonoBehaviour
             switch (actionCards[i].color)
             {
                 case ActionCard.Color.red:
-                    card.GetComponent<Image>().color = Color.red;
+                    card.GetComponent<Image>().color = redColor;
                     break;
                 case ActionCard.Color.green:
-                    card.GetComponent<Image>().color = Color.green;
+                    card.GetComponent<Image>().color = greenColor;
                     break;
                 case ActionCard.Color.blue:
-                    card.GetComponent<Image>().color = Color.blue;
+                    card.GetComponent<Image>().color = blueColor;
                     break;
                 case ActionCard.Color.yellow:
-                    card.GetComponent<Image>().color = Color.yellow;
+                    card.GetComponent<Image>().color = yellowColor;
                     break;
                 default:
                     break;
@@ -126,18 +134,21 @@ public class CardSpawner : MonoBehaviour
             card.name = "WildCard_" + wildCards[i].type;
             card.GetComponent<Button>().onClick.AddListener(() => turnHandler.PlayCard(card));
 
+            card.GetComponent<Image>().color = blackColor;
+
             //Save card values for later use
             CardValueSaver valueSaver = card.GetComponent<CardValueSaver>();
             valueSaver.cardType = CardValueSaver.CardType.wild;
             valueSaver.wildType = (CardValueSaver.WildType)Enum.Parse(typeof(CardValueSaver.WildType), wildCards[i].type.ToString());
 
+            Transform wildImage = card.transform.GetChild(0); //get action card image which is the first child
             switch (wildCards[i].type)
             {
                 case WildCard.Type.colorChange:
-                    card.GetComponent<Image>().sprite = colorChangeCard;
+                    wildImage.GetComponent<Image>().sprite = colorChangeCard;
                     break;
                 case WildCard.Type.draw4:
-                    card.GetComponent<Image>().sprite = draw4Card;
+                    wildImage.GetComponent<Image>().sprite = draw4Card;
                     break;
                 default:
                     break;

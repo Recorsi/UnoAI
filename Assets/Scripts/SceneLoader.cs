@@ -32,4 +32,10 @@ public class SceneLoader : MonoBehaviour
         //reload scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    public void ExitGame()
+    {
+        print("Quit Application");
+        Application.Quit();
+    }
 }

@@ -8,6 +8,8 @@ public class TurnHandler : MonoBehaviour
 {
     public TextMeshProUGUI winText;
 
+    public TextMeshProUGUI turnIndicatorText;
+
     public GameObject[] UNOTexts;
     public BaysProb probabilty = new BaysProb();
 
@@ -117,7 +119,7 @@ public class TurnHandler : MonoBehaviour
                 break;
         }
 
-        print("Player " + (activePlayer + 1) + "'s turn");
+        turnIndicatorText.text = "Player " + (activePlayer + 1) + "'s turn";
     }
 
     void SwitchActivePlayer()
@@ -530,15 +532,19 @@ public class TurnHandler : MonoBehaviour
             {
                 case 1: //red
                     card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.red;
+                    card.GetComponent<Image>().color = cardSpawner.redColor;
                     break;
                 case 2: //green
                     card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.green;
+                    card.GetComponent<Image>().color = cardSpawner.greenColor;
                     break;
                 case 3: //blue
                     card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.blue;
+                    card.GetComponent<Image>().color = cardSpawner.blueColor;
                     break;
                 case 4: //yellow
                     card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.yellow;
+                    card.GetComponent<Image>().color = cardSpawner.yellowColor;
                     break;
             }
             if (card.GetComponent<CardValueSaver>().wildType.Equals(CardValueSaver.WildType.colorChange))

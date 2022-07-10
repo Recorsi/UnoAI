@@ -2377,14 +2377,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parentObj: {fileID: 1198221300}
-  numberCardBG: {fileID: 21300000, guid: abe09a6553fabe04da98d3afa65000b8, type: 3}
-  draw2Card: {fileID: 21300000, guid: be3700d5117c1894cb0f215693f94618, type: 3}
-  reverseCard: {fileID: 21300000, guid: be130d1f6334a0647a47eb27a226593e, type: 3}
-  skipCard: {fileID: 21300000, guid: 691eab292eba71249a0f2002fd95dd79, type: 3}
+  cardBG: {fileID: 21300000, guid: 1f9005f2a4f9b8243831d0e765a9605e, type: 3}
+  draw2Card: {fileID: 21300000, guid: e5b3478c87f7bd847ab5a7c53fcca054, type: 3}
+  reverseCard: {fileID: 21300000, guid: b216ca15c0f1f3940bea1d91cd7aec00, type: 3}
+  skipCard: {fileID: 21300000, guid: 9188ef5e9330dc14d926c1109d039567, type: 3}
   colorChangeCard: {fileID: 21300000, guid: ee9f58b5a44a1804f84401f7a4505c82, type: 3}
   draw4Card: {fileID: 21300000, guid: 839cadb38d2250a478d102471936091b, type: 3}
   numberCardPrefab: {fileID: 4940507366010415297, guid: 6ddc20eef4fea81419b34e6f549b2d11, type: 3}
-  actionCardPrefab: {fileID: 1236351426620962896, guid: 20a9d703001dc4f48b1b3d3a688f6c7d, type: 3}
+  actionCardPrefab: {fileID: 1236351426620962896, guid: 4f3f75d5ebfcd8148b766b3634550850, type: 3}
   wildCardPrefab: {fileID: 8889688404851543021, guid: c2e921ad29a8a40459bf66142a897172, type: 3}
   numberCards:
   - {fileID: 11400000, guid: 1689cf03ac598b94ab868631303f258d, type: 2}

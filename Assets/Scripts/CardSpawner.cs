@@ -10,7 +10,7 @@ public class CardSpawner : MonoBehaviour
     [SerializeField] GameObject parentObj;
 
     [Header("UI Images")]
-    [SerializeField] Sprite numberCardBG;
+    [SerializeField] Sprite cardBG;
                      
     [SerializeField] Sprite draw2Card;
     [SerializeField] Sprite reverseCard;
@@ -102,16 +102,18 @@ public class CardSpawner : MonoBehaviour
                 default:
                     break;
             }
+
+            Transform actionImage = card.transform.GetChild(0); //get action card image which is the first child
             switch (actionCards[i].type)
             {
                 case ActionCard.Type.draw2:
-                    card.GetComponent<Image>().sprite = draw2Card;
+                    actionImage.GetComponent<Image>().sprite = draw2Card;
                     break;
                 case ActionCard.Type.reverse:
-                    card.GetComponent<Image>().sprite = reverseCard;
+                    actionImage.GetComponent<Image>().sprite = reverseCard;
                     break;
                 case ActionCard.Type.skip:
-                    card.GetComponent<Image>().sprite = skipCard;
+                    actionImage.GetComponent<Image>().sprite = skipCard;
                     break;
                 default:
                     break;

@@ -85,7 +85,9 @@ public class BaysProb
     }
     double chanceOfDrawingSpecificCardInGroup(int group, int card)
     {
-        return (double) AllCards[group][card]/ (double) AllCards[group].Sum();
+        double cardSum = AllCards[group][card];
+        double cardsSum = AllCards[group].Sum();
+        return cardSum / cardsSum;
     }
     double chanceOfDrawingSpecial()
     {

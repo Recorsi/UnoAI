@@ -143,6 +143,8 @@ public class TurnHandler : MonoBehaviour
     {
         if (awaitPlayColorChoice) { return; }
 
+        hasPickedCard = false;
+
         switch (activePlayer)
         {
             case 0:

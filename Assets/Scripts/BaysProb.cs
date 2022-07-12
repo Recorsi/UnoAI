@@ -83,10 +83,24 @@ public class BaysProb
 
         return checkOnlyLeft(total, personal);
     }
-    double chanceOfDrawingSpecificCardInGroup(int group, int card)
+    double chanceOfDrawingSpecificCard(int group, int card)
     {
-        double cardSum = AllCards[group][card];
-        double cardsSum = AllCards[group].Sum();
+        double cardSum = 0;
+        double cardsSum = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            cardSum += AllCards[i][card];
+            if(group != 4)
+            {
+                cardsSum += AllCards[i].Sum();
+            }
+        }
+        cardsSum += AllCards[4].Sum();
+        if (group == 4)
+        {
+            cardsSum += AllCards[4][card];
+        }
+
         return cardSum / cardsSum;
     }
     double chanceOfDrawingSpecial()
@@ -189,7 +203,7 @@ public class BaysProb
             }
         }
 
-        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCardInGroup(color,num)));
+        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCard(color,num)));
         if (AllCards[color][num] > 0)
         {
             AllCards[color][num]--;
@@ -224,25 +238,25 @@ public class BaysProb
             {
                 for (int i = 10; i < 12; i++)
                 {
-                    if (cardNumChance < chanceOfDrawingSpecificCardInGroup(cardColor, i))
+                    if (cardNumChance < chanceOfDrawingSpecificCard(cardColor, i))
                     {
                         cardNum = i;
-                        cardNumChance = chanceOfDrawingSpecificCardInGroup(cardColor, i);
+                        cardNumChance = chanceOfDrawingSpecificCard(cardColor, i);
                     }
 
                 }
             }
             else
             {
-                if (chanceOfDrawingSpecificCardInGroup(cardColor, 0) < chanceOfDrawingSpecificCardInGroup(cardColor, 1))
+                if (chanceOfDrawingSpecificCard(cardColor, 0) < chanceOfDrawingSpecificCard(cardColor, 1))
                 {
                     cardNum = 1;
-                    cardNumChance = chanceOfDrawingSpecificCardInGroup(cardColor, 1);
+                    cardNumChance = chanceOfDrawingSpecificCard(cardColor, 1);
                 }
                 else
                 {
                     cardNum = 0;
-                    cardNumChance = chanceOfDrawingSpecificCardInGroup(cardColor, 0);
+                    cardNumChance = chanceOfDrawingSpecificCard(cardColor, 0);
                 }
             }
 
@@ -260,10 +274,10 @@ public class BaysProb
             }
             for (int i = 0; i < 10; i++)
             {
-                if (cardNumChance < chanceOfDrawingSpecificCardInGroup(cardColor, i))
+                if (cardNumChance < chanceOfDrawingSpecificCard(cardColor, i))
                 {
                     cardNum = i;
-                    cardNumChance = chanceOfDrawingSpecificCardInGroup(cardColor, i);
+                    cardNumChance = chanceOfDrawingSpecificCard(cardColor, i);
                 }
             }
         }

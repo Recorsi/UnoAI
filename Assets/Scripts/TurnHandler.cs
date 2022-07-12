@@ -370,6 +370,9 @@ public class TurnHandler : MonoBehaviour
 
             cardSpawner.Shuffle(cardSpawner.gameCards);
 
+            //Tell the AI cards where shuffled
+            probabilty.shuffleCardsUpdate(playerList[1].playerCards);
+
             foreach (var card in cardSpawner.gameCards) //move shuffled cards offscreen
                 card.transform.position = cardDeckPos.position;
 

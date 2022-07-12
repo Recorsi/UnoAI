@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
+using System.IO;
 
 public class BaysCards
 {
@@ -22,6 +23,17 @@ public class BaysCards
 
 public class BaysProb
 {
+    private double colorChanceEnemy;
+    private double cardChanceEnemy;
+    private double colorChanceTotal;
+    private double cardChanceTotal;
+    public int EnemyCardTotal;
+    public int AICardTotal;
+    private int posMoves;
+
+    public bool awaitingDatasaveAI = false;
+    public int EnemyPlayed=0;
+    public int AICanPlay = 0;
 
     //0,1,2,3,4,5,6,7,8,9,skip,reverse,draw2
     private static int[] RedCards = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -342,6 +354,9 @@ public class BaysProb
             }
         }
 
+        if(playbleCards.Count > 0) { AICanPlay = 1; } else { AICanPlay = 0; }
+        SaveOutcomeForNeural();
+
         //^special case^ if we cant play any one card return null
         if (playbleCards.Count == 0)
         {
@@ -357,10 +372,11 @@ public class BaysProb
                 Debug.Log("i pick color: " + whatColorDoWeHaveMostOf(myCards));
             }
 
-            return playbleCards[0];
+            return storeAndPassCard(playbleCards[0], myCards);
         }
 
         double currentBest = 100;
+
         GameObject bestCard = playbleCards[0];
 
         //TODO some logic for wild cards ya know
@@ -400,7 +416,73 @@ public class BaysProb
         Debug.Log("with type: " + bestCard.GetComponent<CardValueSaver>().cardType);
         Debug.Log("prob of: " + currentBest);
 
-        return bestCard;
+        return storeAndPassCard(bestCard, myCards);
+    }
+    private GameObject storeAndPassCard(GameObject card, List<GameObject> myCards)
+    {
+        int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
+        CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
+
+        colorChanceEnemy = colorValueForEnemy(card);
+        cardChanceEnemy = typeValueForEnemy(card);
+        colorChanceTotal = chanceOfDrawingColor(colorIntCode);
+        AICardTotal--;
+
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            int cardNum = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
+            {
+                cardNum = 0;
+            }
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            cardChanceTotal = AllCards[colorIntCode][cardNum] / sumAll;
+        }
+        else
+        {
+            int cardNum = 12;
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
+            {
+                cardNum = cardValues.cardNumber;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
+            {
+                cardNum = 10;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
+            {
+                cardNum = 11;
+            }
+            double sumNum = 0;
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumNum += AllCards[i][cardNum];
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            cardChanceTotal = sumNum / sumAll;
+        }
+
+        posMoves = 0;
+        foreach (GameObject cardl in myCards)
+        {
+            if (cardIsPlayable(cardl, cardValues))
+            {
+                posMoves++;
+            }
+        }
+
+        awaitingDatasaveAI = true;
+
+        return card;
     }
     private CardValueSaver.Color whatColorDoWeHaveMostOf(List<GameObject> myCards)
     {
@@ -643,6 +725,19 @@ public class BaysProb
         }
     }
 
+    private void SaveOutcomeForNeural()
+    {
+        if (awaitingDatasaveAI)
+        {
+            String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" + cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
+
+            using StreamWriter file = new("DataSaved.txt", true);
+            file.WriteLine(text);
+        }
+
+        EnemyPlayed = 0;
+        awaitingDatasaveAI = false;
+    }
 
 
     //debug functions

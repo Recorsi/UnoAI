@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-
+using System.Threading.Tasks;
 public class TurnHandler : MonoBehaviour
 {
     public TextMeshProUGUI winText;
@@ -159,11 +160,15 @@ public class TurnHandler : MonoBehaviour
 
     private void AiTurn()
     {
+
         if (playerList[1].activeTurn == true)
         {
             //probabilty.showEntireArrayStructure();
 
             GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1]);
+            probabilty.EnemyCardTotal = playerList[0].playerCards.Count;
+            probabilty.AICardTotal = playerList[1].playerCards.Count;
+
             if (playCard != null)
             {
                 PlayCard(playCard);
@@ -204,6 +209,7 @@ public class TurnHandler : MonoBehaviour
             //Did AI assume correct card
             if (activePlayer == 0)
             {
+                probabilty.EnemyPlayed = 1;
                 probabilty.addACardToAIDeck(playedCard, true);
             }
             //

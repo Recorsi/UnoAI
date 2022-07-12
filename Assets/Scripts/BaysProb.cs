@@ -408,6 +408,7 @@ public class BaysProb
         //simple logic for wild cards
         if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
         {
+            bestCard.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
             switch (bestCard.GetComponent<CardValueSaver>().color)
             {
                 case CardValueSaver.Color.red:
@@ -424,7 +425,6 @@ public class BaysProb
                     break;
             }
 
-            bestCard.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
             Debug.Log("i pick color: " + whatColorDoWeHaveMostOf(myCards));
         }
 

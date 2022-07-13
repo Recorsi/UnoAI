@@ -516,38 +516,30 @@ public class BaysProb
             CardValueSaver CardValues = card.GetComponent<CardValueSaver>();
 
             if (CardValues.color.Equals(CardValueSaver.Color.yellow))
-            {
                 countY++;
-            }
             if (CardValues.color.Equals(CardValueSaver.Color.blue))
-            {
                 countB++;
-            }
             if (CardValues.color.Equals(CardValueSaver.Color.green))
-            {
                 countG++;
-            }
             if (CardValues.color.Equals(CardValueSaver.Color.red))
-            {
                 countR++;
-            }
         }
 
-        if (countR > countG && countR > countB && countR > countY)
+        int[] count = new int[] { countR, countG, countB, countY };
+        int index = Array.IndexOf(count, count.Max());
+
+        switch (index)
         {
-            return CardValueSaver.Color.red;
-        }
-        if (countG > countR && countG > countB && countG > countY)
-        {
-            return CardValueSaver.Color.green;
-        }
-        if (countB > countG && countB > countR && countB > countY)
-        {
-            return CardValueSaver.Color.blue;
-        }
-        else
-        {
-            return CardValueSaver.Color.yellow;
+            case 0: //red
+                return CardValueSaver.Color.red;
+            case 1: //green
+                return CardValueSaver.Color.green;
+            case 2: //blue
+                return CardValueSaver.Color.blue;
+            case 3: //yellow
+                return CardValueSaver.Color.yellow;
+            default:
+                return CardValueSaver.Color.red;
         }
     }
     public void addACardToAIDeck(GameObject card, bool otherPlaydIt)

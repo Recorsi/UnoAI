@@ -66,7 +66,6 @@ public class TurnHandler : MonoBehaviour
             }
         }
 
-        probabilty.makeInitalGuess(playerList[1].playerCards);
         //insertThisLogic
         //playerList[activePlayer].playerCards[index]
         //
@@ -93,11 +92,7 @@ public class TurnHandler : MonoBehaviour
             StartCoroutine(PickWildcardColor(discardPile[0]));
         }
 
-        //hide color pick buttons
-        foreach (var button in colorButtons)
-        {
-            button.gameObject.SetActive(false);
-        }
+        probabilty.makeInitalGuess(playerList[1].playerCards);
 
         winScreen.SetActive(false);
 
@@ -542,7 +537,6 @@ public class TurnHandler : MonoBehaviour
 
     private IEnumerator PickWildcardColor(GameObject card)
     {
-
         awaitPlayColorChoice = true;
 
         //show color pick buttons 

@@ -22,7 +22,7 @@ public class PlayerCardsDisplay : MonoBehaviour
             {
                 GameObject card = turnHandler.playerList[i].playerCards[j];
                 card.transform.position = playerInitialPositions[i].position + new Vector3(tempPos, 0, 0);
-                card.transform.parent = playerInitialPositions[i];
+                card.transform.SetParent(playerInitialPositions[i]);
                 card.transform.SetSiblingIndex(j);
                 tempPos += 60;
             }

@@ -264,7 +264,7 @@ public class TurnHandler : MonoBehaviour
     {
         discardPile.Add(card);
         card.transform.position = discardPilePos.position;
-        card.transform.parent = discardPilePos;
+        card.transform.SetParent(discardPilePos);
         card.transform.SetAsLastSibling();
     }
 
@@ -676,7 +676,8 @@ public class TurnHandler : MonoBehaviour
                 break;
             case CardValueSaver.CardType.wild:
                 card.GetComponent<Image>().sprite = cardBGSprite;
-                card.GetComponent<Image>().color = cardSpawner.blackColor;
+                if(card.GetComponent<Image>().color == Color.white)
+                    card.GetComponent<Image>().color = cardSpawner.blackColor;
 
                 card.transform.GetChild(0).gameObject.SetActive(true);
                 break;

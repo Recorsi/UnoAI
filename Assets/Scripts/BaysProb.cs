@@ -384,8 +384,7 @@ public class BaysProb
             //simple logic for wild cards
             if (playbleCards[0].GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
             {
-                playbleCards[0].GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
-                Debug.Log("i pick color: " + whatColorDoWeHaveMostOf(myCards));
+                AIPickColor(myCards, playbleCards[0]);
             }
 
             return storeAndPassCard(playbleCards[0], myCards);
@@ -408,23 +407,7 @@ public class BaysProb
         //simple logic for wild cards
         if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
         {
-            Debug.Log("picked color: " + whatColorDoWeHaveMostOf(myCards));
-            bestCard.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
-            switch (bestCard.GetComponent<CardValueSaver>().color)
-            {
-                case CardValueSaver.Color.red:
-                    TurnHandler.Instance.SetWildCardColor(bestCard, 1);
-                    break;
-                case CardValueSaver.Color.green:
-                    TurnHandler.Instance.SetWildCardColor(bestCard, 2);
-                    break;
-                case CardValueSaver.Color.blue:
-                    TurnHandler.Instance.SetWildCardColor(bestCard, 3);
-                    break;
-                case CardValueSaver.Color.yellow:
-                    TurnHandler.Instance.SetWildCardColor(bestCard, 4);
-                    break;
-            }
+            AIPickColor(myCards, bestCard);
         }
 
         Debug.Log("best color would be: " + bestCard.GetComponent<CardValueSaver>().color);
@@ -433,6 +416,28 @@ public class BaysProb
 
         return storeAndPassCard(bestCard, myCards);
     }
+
+    private void AIPickColor(List<GameObject> myCards, GameObject card)
+    {
+        Debug.Log("picked color: " + whatColorDoWeHaveMostOf(myCards));
+        card.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
+        switch (card.GetComponent<CardValueSaver>().color)
+        {
+            case CardValueSaver.Color.red:
+                TurnHandler.Instance.SetWildCardColor(card, 1);
+                break;
+            case CardValueSaver.Color.green:
+                TurnHandler.Instance.SetWildCardColor(card, 2);
+                break;
+            case CardValueSaver.Color.blue:
+                TurnHandler.Instance.SetWildCardColor(card, 3);
+                break;
+            case CardValueSaver.Color.yellow:
+                TurnHandler.Instance.SetWildCardColor(card, 4);
+                break;
+        }
+    }
+
     private GameObject storeAndPassCard(GameObject card, List<GameObject> myCards)
     {
         int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());

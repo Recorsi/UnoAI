@@ -197,6 +197,8 @@ public class TurnHandler : MonoBehaviour
     //On card button
     public void PlayCard(GameObject playedCard)
     {
+        if (awaitPlayColorChoice) { return; }
+
         //find card array index in player array
         int currentIndex = 0;
         for (int i = 0; i < playerList[activePlayer].playerCards.Count; i++)
@@ -540,10 +542,9 @@ public class TurnHandler : MonoBehaviour
 
     private IEnumerator PickWildcardColor(GameObject card)
     {
-        if (card.GetComponent<CardValueSaver>().wildType.Equals(CardValueSaver.WildType.colorChange))
-        {
-            awaitPlayColorChoice = true;
-        }
+
+        awaitPlayColorChoice = true;
+
         //show color pick buttons 
         foreach (var button in colorButtons)
         {
@@ -565,11 +566,10 @@ public class TurnHandler : MonoBehaviour
 
             SetWildCardColor(card, colorID);
 
+            awaitPlayColorChoice = false;
+
             if (card.GetComponent<CardValueSaver>().wildType.Equals(CardValueSaver.WildType.colorChange))
-            {
-                awaitPlayColorChoice = false;
                 SwitchActivePlayer();
-            }
         }
     }
 

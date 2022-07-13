@@ -19,5 +19,7 @@ Paper Cuts  <   No Cuts
 <br />
 Not fun     =   Also not fun
 <br />
+Requires you sell you soul to UNO company > Requires a PC
+<br />
 
 Ah it was a draw oh well

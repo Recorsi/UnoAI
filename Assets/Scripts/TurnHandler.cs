@@ -103,6 +103,8 @@ public class TurnHandler : MonoBehaviour
 
         //begin first turn for player 0
         SetActivePlayer(0);
+
+        ToggleAICardDisplay(); //call at start so toogle can be activaed at game start
     }
 
     void SetActivePlayer(int index)

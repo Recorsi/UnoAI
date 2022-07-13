@@ -6,8 +6,7 @@ public class PlayerCardsDisplay : MonoBehaviour
 {
     TurnHandler turnHandler;
 
-    [SerializeField] Transform player0InitialPos;
-    [SerializeField] Transform player1InitialPos;
+    [SerializeField] Transform[] playerInitialPositions;
 
     private void Start()
     {
@@ -17,22 +16,17 @@ public class PlayerCardsDisplay : MonoBehaviour
     public void DisplayPlayerCards()
     {
         int tempPos = 0;
-        for (int i = 0; i < turnHandler.playerList[0].playerCards.Count; i++)
+        for (int i = 0; i < turnHandler.playerList.Count; i++)
         {
-            GameObject card = turnHandler.playerList[0].playerCards[i];
-            card.transform.position = player0InitialPos.position + new Vector3(tempPos, 0, 0);
-            card.transform.parent = player0InitialPos;
-            card.transform.SetSiblingIndex(i);
-            tempPos += 60;
-        }
-        tempPos = 0;
-        for (int i = 0; i < turnHandler.playerList[1].playerCards.Count; i++)
-        {
-            GameObject card = turnHandler.playerList[1].playerCards[i];
-            card.transform.position = player1InitialPos.position + new Vector3(tempPos, 0, 0);
-            card.transform.parent = player1InitialPos;
-            card.transform.SetSiblingIndex(i);
-            tempPos += 60;
+            for (int j = 0; j < turnHandler.playerList[i].playerCards.Count; j++)
+            {
+                GameObject card = turnHandler.playerList[i].playerCards[j];
+                card.transform.position = playerInitialPositions[i].position + new Vector3(tempPos, 0, 0);
+                card.transform.parent = playerInitialPositions[i];
+                card.transform.SetSiblingIndex(j);
+                tempPos += 60;
+            }
+            tempPos = 0;
         }
     }
 }

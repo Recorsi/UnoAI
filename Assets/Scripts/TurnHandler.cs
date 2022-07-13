@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Threading.Tasks;
 public class TurnHandler : MonoBehaviour
 {
     public TextMeshProUGUI winText;
@@ -15,8 +13,11 @@ public class TurnHandler : MonoBehaviour
     public BaysProb probabilty = new BaysProb();
 
     public Button[] colorButtons;
+    public Toggle cardHideToggle;
 
     public GameObject winScreen;
+    [SerializeField] Sprite cardBackSprite;
+    [SerializeField] Sprite cardBGSprite;
 
     public Transform discardPilePos;
     public Transform cardDeckPos;
@@ -182,7 +183,7 @@ public class TurnHandler : MonoBehaviour
             else
             {
                 PickCard();
-                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count-1], false);
+                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count - 1], false);
                 AiTurn();
             }
             //logic to decide card
@@ -214,7 +215,8 @@ public class TurnHandler : MonoBehaviour
                 probabilty.EnemyPlayed = 1;
                 probabilty.addACardToAIDeck(playedCard, true);
             }
-            //
+
+            RevealAICard(playedCard); //reveal card in case its hidden
 
             print("Played card");
 
@@ -300,6 +302,7 @@ public class TurnHandler : MonoBehaviour
 
                 print("picked card");
 
+                ToggleAICardDisplay();
                 CheckForUNO();
             }
             else if (discardPile.Count > 1)
@@ -357,7 +360,7 @@ public class TurnHandler : MonoBehaviour
                         probabilty.predictACard();//let the AI guess what card human got
                         break;
                 }
-                
+
                 cardSpawner.gameCards.RemoveAt(cardSpawner.gameCards.Count - 1);
             }
             cardSpawner.GetComponent<PlayerCardsDisplay>().DisplayPlayerCards();
@@ -384,6 +387,8 @@ public class TurnHandler : MonoBehaviour
         {
             print("Not enough cards left to take");
         }
+
+        ToggleAICardDisplay();
     }
 
     private (bool playable, bool reverse, bool skip) CheckPlayable(int index, bool executeActions)
@@ -440,7 +445,7 @@ public class TurnHandler : MonoBehaviour
                         return (true, false, true);
                     else if (card.GetComponent<CardValueSaver>().actionType == CardValueSaver.ActionType.draw2)
                     {
-                        if(executeActions)
+                        if (executeActions)
                             DrawX(2);
 
                         return (true, false, true);
@@ -585,6 +590,93 @@ public class TurnHandler : MonoBehaviour
             case 4: //yellow
                 card.GetComponent<CardValueSaver>().color = CardValueSaver.Color.yellow;
                 card.GetComponent<Image>().color = cardSpawner.yellowColor;
+                break;
+        }
+    }
+
+    public void ToggleAICardDisplay() //on UI Toggle
+    {
+        foreach (GameObject card in playerList[1].playerCards)
+        {
+            if (cardHideToggle.isOn) //if card value is supposed to be hidden
+            {
+                card.GetComponent<Image>().sprite = cardBackSprite;
+
+                card.GetComponent<Image>().color = Color.white;
+
+                card.transform.GetChild(0).gameObject.SetActive(false); //deactivate action & wild card sprite
+
+                foreach (var text in card.GetComponentsInChildren<TextMeshProUGUI>())
+                {
+                    text.enabled = false; //deactivate text in case of numbercard
+                }
+            }
+            else //if card value was hidden before
+            {
+                RevealAICard(card);
+            }
+        }
+    }
+
+    private void RevealAICard(GameObject card)
+    {
+        switch (card.GetComponent<CardValueSaver>().cardType)
+        {
+            case CardValueSaver.CardType.number:
+
+                card.GetComponent<Image>().sprite = cardBGSprite;
+
+                switch (card.GetComponent<CardValueSaver>().color) //Set Color Again
+                {
+                    case CardValueSaver.Color.red:
+                        card.GetComponent<Image>().color = cardSpawner.redColor;
+                        break;
+                    case CardValueSaver.Color.green:
+                        card.GetComponent<Image>().color = cardSpawner.greenColor;
+                        break;
+                    case CardValueSaver.Color.blue:
+                        card.GetComponent<Image>().color = cardSpawner.blueColor;
+                        break;
+                    case CardValueSaver.Color.yellow:
+                        card.GetComponent<Image>().color = cardSpawner.yellowColor;
+                        break;
+                }
+
+                card.transform.GetChild(0).gameObject.SetActive(true);
+
+                foreach (var text in card.GetComponentsInChildren<TextMeshProUGUI>()) //show text again
+                {
+                    text.enabled = true;
+                }
+                break;
+            case CardValueSaver.CardType.action:
+
+                card.GetComponent<Image>().sprite = cardBGSprite;
+
+                card.transform.GetChild(0).gameObject.SetActive(true);
+
+                switch (card.GetComponent<CardValueSaver>().color) //Set Color Again
+                {
+                    case CardValueSaver.Color.red:
+                        card.GetComponent<Image>().color = cardSpawner.redColor;
+                        break;
+                    case CardValueSaver.Color.green:
+                        card.GetComponent<Image>().color = cardSpawner.greenColor;
+                        break;
+                    case CardValueSaver.Color.blue:
+                        card.GetComponent<Image>().color = cardSpawner.blueColor;
+                        break;
+                    case CardValueSaver.Color.yellow:
+                        card.GetComponent<Image>().color = cardSpawner.yellowColor;
+                        break;
+                }
+
+                break;
+            case CardValueSaver.CardType.wild:
+                card.GetComponent<Image>().sprite = cardBGSprite;
+                card.GetComponent<Image>().color = cardSpawner.blackColor;
+
+                card.transform.GetChild(0).gameObject.SetActive(true);
                 break;
         }
     }

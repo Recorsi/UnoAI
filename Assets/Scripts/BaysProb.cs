@@ -393,10 +393,13 @@ public class BaysProb
         double currentBest = 100;
 
         GameObject bestCard = playbleCards[0];
+        NNImport nnImport = GameObject.Find("NNImporter").GetComponent<NNImport>();
 
-        //TODO some logic for wild cards ya know
         foreach (GameObject card in playbleCards)//we should replace this with the nural logic 
         {
+            //TODO: Neural Network Logic 
+            nnImport.CalcNNOutput(new float[] { /*new values pls!!!!!*/ });
+
             if (colorValueForEnemy(card) + typeValueForEnemy(card) < currentBest)
             {
                 bestCard = card;

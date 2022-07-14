@@ -3,18 +3,21 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-device = "cude" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 #the inital setup
 n_input, n_hidden, n_out, batch_size, learning_rate = 7, 15, 2, 7, 0.01
+accDataAmount = 10
 debug = 1
 
 #input array
 data_x = torch.randn(batch_size, n_input)
 data_inputArrat = []
+data_inputArratAcc = []
 #output array
 data_y = (torch.rand(size=(batch_size, n_out)) < 0.5).float()
 data_outputArrat = []
+data_outputArratAcc = []
 
 if(debug):
     print(data_x.size())
@@ -41,8 +44,14 @@ def loadData():
         for key in Range(len(newArrayOutStr)):
             newArrayOut.append(float(newArrayOutStr[key]))
 
-        data_inputArrat.append(newArray)
-        data_outputArrat.append(newArrayOut)
+        if(count + accDataAmount < len(Lines)):
+            data_inputArrat.append(newArray)
+            data_outputArrat.append(newArrayOut)
+        
+        else:
+            data_inputArratAcc.append(newArray)
+            data_outputArratAcc.append(newArrayOut)
+        
         if(debug):
             print(newArray)
             print(newArrayOut)
@@ -86,13 +95,25 @@ for epoch in range(3):
 
         optimizer.step()
     
+accuracyProp = 0
+if(debug):
+    print("Finding accuracy")
+
+for key, value in enumerate(data_inputArratAcc):
+    pred_y = model(torch.tensor(value))
+    print(pred_y)
+    loss = loss_function(pred_y, torch.tensor(data_outputArratAcc[key]))
+
+loss = (loss/accDataAmount)
 
 #torch.save(model, "C:\My programs\Git\MyNameIsJeff");
 
 #debug stuff
 if(debug):
+    #print ("loss was: " +loss+ "%")
+
     plt.plot(losses)
     plt.ylabel('loss')
     plt.xlabel('iterations')
     plt.title("Learning rate %f"%(learning_rate))
-    plt.show()
+    plt.show()    

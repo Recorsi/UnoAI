@@ -9,6 +9,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 n_input, n_hidden, n_out, batch_size, learning_rate = 7, 15, 2, 7, 0.01
 accDataAmount = 10
 debug = 1
+pathHere = 'C:/My programs/Git/UnoAI/NeuralNet/'
 
 #input array
 data_x = torch.randn(batch_size, n_input)
@@ -24,7 +25,7 @@ if(debug):
     print(data_y.size())
 
 def loadData():
-    file1 = open('C:/My programs/Git/UnoAI/NeuralNet/DataSaved.txt', 'r')
+    file1 = open(pathHere + 'DataSaved.txt', 'r')
     Lines = file1.readlines()
     count = 0
     for line in Lines:
@@ -101,19 +102,33 @@ if(debug):
 
 for key, value in enumerate(data_inputArratAcc):
     pred_y = model(torch.tensor(value))
-    print(pred_y)
-    loss = loss_function(pred_y, torch.tensor(data_outputArratAcc[key]))
+    outP1 = torch.tensor(pred_y)[0]
+    outP2 = torch.tensor(pred_y)[1]
+    
+    if(outP1 < data_outputArratAcc[key][0]):
+        accuracyProp += data_outputArratAcc[key][0] - outP1
+    else:
+        accuracyProp += outP1 - data_outputArratAcc[key][0]
 
-loss = (loss/accDataAmount)
+    if(outP2 < data_outputArratAcc[key][1]):
+        accuracyProp += data_outputArratAcc[key][1] - outP2
+    else:
+        accuracyProp += outP2 - data_outputArratAcc[key][1]
+
+accuracyProp = (accuracyProp/accDataAmount)
 
 #torch.save(model, "C:\My programs\Git\MyNameIsJeff");
 
 #debug stuff
 if(debug):
-    #print ("loss was: " +loss+ "%")
+    #print ("loss was: ")
+    #print (float(accuracyProp))
+    print ("accuracy was: " + str(float(accuracyProp)))
 
     plt.plot(losses)
     plt.ylabel('loss')
     plt.xlabel('iterations')
     plt.title("Learning rate %f"%(learning_rate))
     plt.show()    
+
+torch.save(model.state_dict(), pathHere + 'model')

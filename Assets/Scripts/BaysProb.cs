@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using System.IO;
+using System.Globalization;
 
 public class BaysCards
 {
@@ -741,6 +742,8 @@ public class BaysProb
     {
         if (awaitingDatasaveAI)
         {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
             String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" + cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
 
             using StreamWriter file = new("DataSaved.txt", true);

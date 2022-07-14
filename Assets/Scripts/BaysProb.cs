@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System;
-using UnityEngine;
-using System.IO;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using UnityEngine;
 
 public class BaysCards
 {
@@ -33,7 +32,7 @@ public class BaysProb
     private int posMoves;
 
     public bool awaitingDatasaveAI = false;
-    public int EnemyPlayed=0;
+    public int EnemyPlayed = 0;
     public int AICanPlay = 0;
 
     //0,1,2,3,4,5,6,7,8,9,skip,reverse,draw2
@@ -91,7 +90,7 @@ public class BaysProb
         for (int i = 0; i < 4; i++)
         {
             cardSum += AllCards[i][card];
-            if(group != 4)
+            if (group != 4)
             {
                 cardsSum += AllCards[i].Sum();
             }
@@ -162,7 +161,7 @@ public class BaysProb
     {
         double mostLikely = 0;
         int res = 0;
-        for(int i = 0; i < AllCards.Length-1; i++)//-1 cus wild will always work
+        for (int i = 0; i < AllCards.Length - 1; i++)//-1 cus wild will always work
         {
             if (i != color && chanceOfDrawingColor(i) > mostLikely)
             {
@@ -179,7 +178,7 @@ public class BaysProb
         int num = 0;
         if (cardOnTableValues.cardType.Equals(CardValueSaver.CardType.wild))//special case when card was wild
         {
-            
+
         }
         else
         {
@@ -204,7 +203,7 @@ public class BaysProb
             }
         }
 
-        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCard(color,num)));
+        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCard(color, num)));
         if (AllCards[color][num] > 0)
         {
             AllCards[color][num]--;
@@ -300,7 +299,7 @@ public class BaysProb
 
         arrangeMyCards(myCards);
 
-        for(int i = 0; i < 7; i++)
+        for (int i = 0; i < 7; i++)
         {
             predictACard();
         }
@@ -356,7 +355,7 @@ public class BaysProb
         {
             Debug.Log("Card does not exist in group");
         }
-        
+
     }
     public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable)
     {
@@ -371,7 +370,7 @@ public class BaysProb
             }
         }
 
-        if(playbleCards.Count > 0) { AICanPlay = 1; } else { AICanPlay = 0; }
+        if (playbleCards.Count > 0) { AICanPlay = 1; } else { AICanPlay = 0; }
         SaveOutcomeForNeural();
 
         //^special case^ if we cant play any one card return null
@@ -562,7 +561,7 @@ public class BaysProb
 
             if (AllCards[4][index] == 0)
             {
-                updateBelif(new int[] {4,index }, otherPlaydIt);
+                updateBelif(new int[] { 4, index }, otherPlaydIt);
             }
             else
             {
@@ -619,7 +618,7 @@ public class BaysProb
         {
             Debug.Log("==========================================================================");
             Debug.Log("Fatal error bays has lost track of the cards");
-            Debug.Log(cardIndex[0] + " "+ cardIndex[1]);
+            Debug.Log(cardIndex[0] + " " + cardIndex[1]);
         }
     }
     private double colorValueForEnemy(GameObject card)
@@ -627,7 +626,7 @@ public class BaysProb
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
         double bestEnemeyChance = 0;
 
-        foreach(BaysCards eCard in EnemyDeck)
+        foreach (BaysCards eCard in EnemyDeck)
         {
             if (giveColorIntCode(cardValues) == eCard.color)
             {
@@ -695,7 +694,7 @@ public class BaysProb
             return true;
         }
         return false;
-        
+
     }
     private int giveColorIntCode(CardValueSaver cardValues)
     {
@@ -728,11 +727,11 @@ public class BaysProb
         AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[2] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[3] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
-        AllCards[4] = new int[] { 4, 4};
+        AllCards[4] = new int[] { 4, 4 };
 
         arrangeMyCards(myCards);
 
-        foreach(BaysCards card in EnemyDeck)
+        foreach (BaysCards card in EnemyDeck)
         {
             AllCards[card.color][card.num]--;
         }
@@ -744,7 +743,8 @@ public class BaysProb
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
-            String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" + cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
+            String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" +
+                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
 
             using StreamWriter file = new("DataSaved.txt", true);
             file.WriteLine(text);

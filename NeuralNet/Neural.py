@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 #the inital setup
 n_input, n_hidden, n_out, batch_size, learning_rate = 7, 15, 2, 7, 0.01
 accDataAmount = 10
@@ -70,7 +68,6 @@ model = nn.Sequential(nn.Linear(n_input, n_hidden),
                       nn.Sigmoid(),
                       nn.Linear(n_hidden, n_out),
                       nn.Sigmoid())
-model.to(device)
 
 if(debug):
     print(model)
@@ -89,7 +86,6 @@ for epoch in range(3):
         losses.append(loss.item())
         print(loss)
         print(epoch)
-        print(device)
 
         model.zero_grad()
         loss.backward()
@@ -115,7 +111,7 @@ for key, value in enumerate(data_inputArratAcc):
     else:
         accuracyProp += outP2 - data_outputArratAcc[key][1]
 
-accuracyProp = (accuracyProp/accDataAmount)
+accuracyProp = (accuracyProp/(accDataAmount*2))
 
 #torch.save(model, "C:\My programs\Git\MyNameIsJeff");
 
@@ -131,4 +127,4 @@ if(debug):
     plt.title("Learning rate %f"%(learning_rate))
     plt.show()    
 
-torch.save(model.state_dict(), pathHere + 'model')
+torch.save(model.state_dict(), pathHere + 'model.pt')

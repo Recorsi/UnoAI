@@ -64,9 +64,13 @@ loadData()
 #create the network
 model = nn.Sequential(nn.Linear(n_input, n_hidden),
                       nn.Sigmoid(),
-                      nn.Linear(n_hidden, n_hidden),
+                      nn.Linear(n_hidden, n_hidden-2),
                       nn.Sigmoid(),
-                      nn.Linear(n_hidden, n_out),
+                      nn.Linear(n_hidden-2, n_hidden-4),
+                      nn.Sigmoid(),
+                      nn.Linear(n_hidden-4, n_hidden-6),
+                      nn.Sigmoid(),
+                      nn.Linear(n_hidden-6, n_out),
                       nn.Sigmoid())
 
 if(debug):
@@ -127,4 +131,15 @@ if(debug):
     plt.title("Learning rate %f"%(learning_rate))
     plt.show()    
 
-torch.save(model.state_dict(), pathHere + 'model.pt')
+torch.onnx.export(model,                       # model being run
+                  torch.tensor([float(1),float(1),float(1),float(1),float(1),float(1),float(1)]),                         # model input (or a tuple for multiple inputs)
+                  pathHere + "model.onnx",            # where to save the model (can be a file or file-like object)
+                  export_params=True,        # store the trained parameter weights inside the model file
+                  opset_version=9,           # the ONNX version to export the model to
+                  do_constant_folding=True,  # whether to execute constant folding for optimization
+                  input_names = ['X'],       # the model's input names
+                  output_names = ['Y']       # the model's output names
+                  )
+
+
+#torch.save(model.state_dict(), pathHere + 'model.pt')

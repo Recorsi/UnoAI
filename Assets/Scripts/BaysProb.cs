@@ -673,6 +673,10 @@ public class BaysProb
                 foundCard = true;
                 AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
                 EnemyDeck.RemoveAt(i);
+                if (!otherPlaydIt)
+                {
+                    predictACard(-1);
+                }
             }
         }
 

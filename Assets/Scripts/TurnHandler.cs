@@ -300,6 +300,10 @@ public class TurnHandler : MonoBehaviour
     {
         if (!hasPickedCard)
         {
+            if (playerList[0].activeTurn == true)//AI wants to guess what card it was then
+            {
+                probabilty.enemyDrewCardInsteadOfPlay(discardPile[discardPile.Count - 1]);
+            }
             if (cardSpawner.gameCards.Count >= 1)
             {
                 playerList[activePlayer].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
@@ -340,10 +344,6 @@ public class TurnHandler : MonoBehaviour
 
         if (!playable) //only skip if not playable
         {
-            if (playerList[0].activeTurn == true)//AI wants to guess what card it was then
-            {
-                probabilty.enemyDrewCardInsteadOfPlay(discardPile[discardPile.Count - 1]);
-            }
             SwitchActivePlayer();
 
             hasPickedCard = false;

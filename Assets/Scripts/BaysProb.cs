@@ -186,6 +186,7 @@ public class BaysProb
     }
     public void enemyDrewCardInsteadOfPlay(GameObject cardOnTable)
     {
+        Debug.Log("drew predicted");
         CardValueSaver cardOnTableValues = cardOnTable.GetComponent<CardValueSaver>();
         (int color, double colorProp) = mostProbebolColorGivenNOTColor(giveColorIntCode(cardOnTableValues));
         int num = 0;
@@ -229,6 +230,7 @@ public class BaysProb
     }
     public void predictACard()
     {
+        Debug.Log("predicted");
         int cardColor = 0;
         double cardColorChance = 0;
 
@@ -411,7 +413,7 @@ public class BaysProb
             //Neural Network Logic 
             int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
             CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
-            double[] evalVals = nnImport.CalcNNOutput(new float[] { (float)colorValueForEnemy(card), (float)typeValueForEnemy(card),
+            double[] evalVals = nnImport.CalcNNOutput(new float[] { (float)colorValueSumForEnemy(card), (float)typeValueSumForEnemy(card),
                                                                     (float)chanceOfDrawingColor(colorIntCode), (float)findChanceOfDrawInDeck(cardValues,colorIntCode),
                                                                     enemyCardsCount, myCards.Count, countCardAICanPlayOnCard(cardValues, myCards)
         });
@@ -457,8 +459,8 @@ public class BaysProb
         int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
-        colorChanceEnemy = colorValueForEnemy(card);
-        cardChanceEnemy = typeValueForEnemy(card);
+        colorChanceEnemy = colorValueSumForEnemy(card);
+        cardChanceEnemy = typeValueSumForEnemy(card);
         colorChanceTotal = chanceOfDrawingColor(colorIntCode);
         cardChanceTotal = findChanceOfDrawInDeck(cardValues, colorIntCode);
         AICardTotal--;
@@ -678,7 +680,7 @@ public class BaysProb
             //throw new Exception();
         }
     }
-    private double colorValueForEnemy(GameObject card)
+    private double colorValueSumForEnemy(GameObject card)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
         double bestEnemeyChance = 0;
@@ -687,16 +689,13 @@ public class BaysProb
         {
             if (giveColorIntCode(cardValues) == eCard.color)
             {
-                if (bestEnemeyChance < eCard.colorProb)
-                {
-                    bestEnemeyChance = eCard.colorProb;
-                }
+                bestEnemeyChance += eCard.colorProb;
             }
         }
         return bestEnemeyChance;
 
     }
-    private double typeValueForEnemy(GameObject card)
+    private double typeValueSumForEnemy(GameObject card)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
         double bestEnemeyChance = 0;
@@ -707,10 +706,7 @@ public class BaysProb
             {
                 if (eCard.num < 10 && eCard.num == cardValues.cardNumber)
                 {
-                    if (bestEnemeyChance < eCard.colorProb)
-                    {
-                        bestEnemeyChance = eCard.colorProb;
-                    }
+                    bestEnemeyChance += eCard.colorProb;
                 }
             }
         }

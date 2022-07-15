@@ -92,7 +92,7 @@ public class TurnHandler : MonoBehaviour
             StartCoroutine(PickWildcardColor(discardPile[0]));
         }
 
-        probabilty.makeInitalGuess(playerList[1].playerCards);
+        probabilty.makeInitalGuess(playerList[1].playerCards, discardPile[0].gameObject);
 
         winScreen.SetActive(false);
 
@@ -180,7 +180,7 @@ public class TurnHandler : MonoBehaviour
             else
             {
                 PickCard();
-                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count - 1], false);
+                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count - 1], false, false);
                 AiTurn();
             }
             //logic to decide card
@@ -212,7 +212,7 @@ public class TurnHandler : MonoBehaviour
             if (activePlayer == 0)
             {
                 probabilty.EnemyPlayed = 1;
-                probabilty.addACardToAIDeck(playedCard, true);
+                probabilty.addACardToAIDeck(playedCard, true, false);
             }
 
             RevealAICard(playedCard); //reveal card in case its hidden
@@ -363,7 +363,7 @@ public class TurnHandler : MonoBehaviour
                         break;
                     case 1:
                         playerList[0].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
-                        probabilty.predictACard();//let the AI guess what card human got
+                        probabilty.predictACard(cardSpawner.gameCards.Count);//let the AI guess what card human got
                         break;
                 }
 

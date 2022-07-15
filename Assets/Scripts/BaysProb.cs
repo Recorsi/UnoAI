@@ -228,8 +228,20 @@ public class BaysProb
         }
 
     }
-    public void predictACard()
+    public void predictACard(int num)
     {
+        int localNum = 0;
+        foreach(int[] a in AllCards)
+        {
+            localNum += a.Sum();
+        }
+        if (localNum != num && num != -1)
+        {
+            Debug.Log("Should be: " + num);
+            Debug.Log("Was: " + localNum);
+        }
+        else { Debug.Log("Was a match "); }
+
         Debug.Log("predicted");
         int cardColor = 0;
         double cardColorChance = 0;
@@ -301,7 +313,7 @@ public class BaysProb
         AllCards[cardColor][cardNum]--;
 
     }
-    public void makeInitalGuess(List<GameObject> myCards)
+    public void makeInitalGuess(List<GameObject> myCards, GameObject firstCard)
     {
         AllCards[0] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -310,20 +322,21 @@ public class BaysProb
         AllCards[4] = new int[] { 4, 4 };
 
         arrangeMyCards(myCards);
+        addACardToAIDeck(firstCard, false, true);
 
         for (int i = 0; i < 7; i++)
         {
-            predictACard();
+            predictACard(-1);
         }
     }
     private void arrangeMyCards(List<GameObject> myCards)
     {
         foreach (GameObject card in myCards)
         {
-            addACardToAIDeck(card, false);
+            addACardToAIDeck(card, false, false);
         }
     }
-    private void removeCardFromGroup(int group, CardValueSaver cardValues, bool otherPlaydIt)
+    private void removeCardFromGroup(int group, CardValueSaver cardValues, bool otherPlaydIt, bool throwCard)
     {
         int index = -1;
 
@@ -350,14 +363,14 @@ public class BaysProb
 
         if (index != -1)
         {
-            if (AllCards[group][index] == 0)
+            if (AllCards[group][index] == 0 && !throwCard)
             {
                 updateBelif(new int[] { group, index }, otherPlaydIt);
             }
             else
             {
                 AllCards[group][index]--;
-                if (otherPlaydIt)
+                if (otherPlaydIt && !throwCard)
                 {
                     updateBelif(new int[] { 4, index }, otherPlaydIt);
                 }
@@ -597,7 +610,7 @@ public class BaysProb
             return sumNum / sumAll;
         }
     }
-    public void addACardToAIDeck(GameObject card, bool otherPlaydIt)
+    public void addACardToAIDeck(GameObject card, bool otherPlaydIt, bool throwCard)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
@@ -616,12 +629,15 @@ public class BaysProb
 
             if (AllCards[4][index] == 0)
             {
-                updateBelif(new int[] { 4, index }, otherPlaydIt);
+                if (!throwCard)
+                {
+                    updateBelif(new int[] { 4, index }, otherPlaydIt);
+                }
             }
             else
             {
                 AllCards[4][index]--;
-                if (otherPlaydIt)
+                if (otherPlaydIt && !throwCard)
                 {
                     updateBelif(new int[] { 4, index }, otherPlaydIt);
                 }
@@ -629,7 +645,7 @@ public class BaysProb
             return;
         }
 
-        removeCardFromGroup(giveColorIntCode(cardValues), cardValues, otherPlaydIt);
+        removeCardFromGroup(giveColorIntCode(cardValues), cardValues, otherPlaydIt, throwCard);
     }
     public void updateBelif(int[] cardIndex, bool otherPlaydIt)
     {
@@ -662,7 +678,7 @@ public class BaysProb
 
         if (foundCard && !otherPlaydIt)
         {
-            predictACard();
+            predictACard(-1);
         }
         else if (otherPlaydIt && cardR != -1)
         {

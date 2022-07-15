@@ -89,22 +89,23 @@ public class BaysProb
     double chanceOfDrawingSpecificCard(int group, int card)
     {
         double cardSum = 0;
-        double cardsSum = 0;
+        double totalCards = 0;
         for (int i = 0; i < 4; i++)
         {
-            cardSum += AllCards[i][card];
+            totalCards += AllCards[i].Sum();
+            
             if (group != 4)
             {
-                cardsSum += AllCards[i].Sum();
+                cardSum += AllCards[i][card];
             }
         }
-        cardsSum += AllCards[4].Sum();
+        totalCards += AllCards[4].Sum();
         if (group == 4)
         {
-            cardsSum += AllCards[4][card];
+            cardSum += AllCards[4][card];
         }
 
-        return cardSum / cardsSum;
+        return cardSum / totalCards;
     }
     double chanceOfDrawingSpecial()
     {
@@ -300,7 +301,6 @@ public class BaysProb
     }
     public void makeInitalGuess(List<GameObject> myCards)
     {
-        Debug.Log("Bays initial idea");
         AllCards[0] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[2] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -370,7 +370,7 @@ public class BaysProb
     public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable, int enemyCardsCount)
     {
         CardValueSaver tableCardValues = cardOnTable.GetComponent<CardValueSaver>();
-
+        //showEntireArrayStructure();
         List<GameObject> playbleCards = new List<GameObject>();//lets figure out what cards to consider
         foreach (GameObject card in myCards)
         {
@@ -423,7 +423,7 @@ public class BaysProb
                 debugPrintMsg = "Your chance of playing on this is: " + evalVals[1] + " mine is: " + evalVals[0];
             }
         }
-        Debug.Log(debugPrintMsg);
+        //Debug.Log(debugPrintMsg);
 
         //simple logic for wild cards
         if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
@@ -431,15 +431,10 @@ public class BaysProb
             AIPickColor(myCards, bestCard);
         }
 
-        Debug.Log("best color would be: " + bestCard.GetComponent<CardValueSaver>().color);
-        Debug.Log("with type: " + bestCard.GetComponent<CardValueSaver>().cardType);
-        Debug.Log("prob of: " + currentBest);
-
         return storeAndPassCard(bestCard, myCards);
     }
     private void AIPickColor(List<GameObject> myCards, GameObject card)
     {
-        Debug.Log("picked color: " + whatColorDoWeHaveMostOf(myCards));
         card.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
         switch (card.GetComponent<CardValueSaver>().color)
         {
@@ -642,6 +637,12 @@ public class BaysProb
 
         for (int i = 0; i < EnemyDeck.Count; i++)
         {
+            if (cardR == -1)
+            {
+                leastLikely = Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb);
+                cardR = i;
+            }
+
             if (leastLikely > Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb))
             {
                 leastLikely = Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb);
@@ -652,14 +653,7 @@ public class BaysProb
             {
 
                 foundCard = true;
-                if (otherPlaydIt)
-                {
-                    Debug.Log("Yea i knew you had that");
-                }
-                else
-                {
-                    Debug.Log("O i thought you had that");
-                }
+                AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
                 EnemyDeck.RemoveAt(i);
             }
         }
@@ -670,6 +664,7 @@ public class BaysProb
         }
         else if (otherPlaydIt && cardR != -1)
         {
+            AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
             EnemyDeck.RemoveAt(cardR);
         }
         else
@@ -677,6 +672,10 @@ public class BaysProb
             Debug.Log("==========================================================================");
             Debug.Log("Fatal error bays has lost track of the cards");
             Debug.Log(cardIndex[0] + " " + cardIndex[1]);
+            showEntireArrayStructure();
+            Debug.Log("Other played it: " + otherPlaydIt);
+            Debug.Log("Other size: " + EnemyDeck.Count);
+            //throw new Exception();
         }
     }
     private double colorValueForEnemy(GameObject card)

@@ -217,8 +217,6 @@ public class TurnHandler : MonoBehaviour
 
             RevealAICard(playedCard); //reveal card in case its hidden
 
-            print("Played card");
-
             hasPickedCard = false;
 
             ToDiscardPile(playedCard);
@@ -310,7 +308,6 @@ public class TurnHandler : MonoBehaviour
 
                 hasPickedCard = true;
 
-                print("picked card");
 
                 ToggleAICardDisplay();
                 CheckForUNO();
@@ -366,7 +363,6 @@ public class TurnHandler : MonoBehaviour
                         break;
                     case 1:
                         playerList[0].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
-                        Debug.Log("ill guess now");
                         probabilty.predictACard();//let the AI guess what card human got
                         break;
                 }

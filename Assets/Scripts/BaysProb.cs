@@ -30,6 +30,7 @@ public class BaysProb
     public int EnemyCardTotal;
     public int AICardTotal;
     private int posMoves;
+    private int isWildCard;
 
     public bool awaitingDatasaveAI = false;
     public int EnemyPlayed = 0;
@@ -463,6 +464,12 @@ public class BaysProb
 
 
         posMoves = countCardAICanPlayOnCard(cardValues, myCards);
+
+        isWildCard = 0;
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            isWildCard = 1;
+        }
         foreach (GameObject cardl in myCards)
         {
             if (cardIsPlayable(cardl, cardValues))
@@ -773,7 +780,8 @@ public class BaysProb
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
             String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" +
-                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
+                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + isWildCard + "-;" +
+                + AICanPlay + "-;" + EnemyPlayed;
 
             using StreamWriter file = new("DataSaved.txt", true);
             file.WriteLine(text);

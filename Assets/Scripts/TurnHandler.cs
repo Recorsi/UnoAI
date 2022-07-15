@@ -246,8 +246,10 @@ public class TurnHandler : MonoBehaviour
                 //disable player 1s cards
                 foreach (var card in playerList[0].playerCards)
                     card.GetComponent<Button>().interactable = false;
+
                 foreach (var card in playerList[1].playerCards)
                     card.GetComponent<Button>().interactable = false;
+
             }
 
         }
@@ -275,6 +277,15 @@ public class TurnHandler : MonoBehaviour
     {
         if (playerList[activePlayer].playerCards.Count == 0)
         {
+            if (activePlayer == 0)
+            {
+                probabilty.SaveOutcomeForNeural(1,0);
+            }
+            else
+            {
+                probabilty.SaveOutcomeForNeural(0,1);
+            }
+
             winText.gameObject.SetActive(true);
             winText.text = "Player " + (activePlayer + 1) + " wins!";
 

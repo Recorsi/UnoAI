@@ -31,6 +31,8 @@ public class BaysProb
     public int AICardTotal;
     private int posMoves;
     private int isWildCard;
+    private int addsMoreCards;
+    private int isSkipCard;
 
     public bool awaitingDatasaveAI = false;
     public int EnemyPlayed = 0;
@@ -372,7 +374,7 @@ public class BaysProb
         }
 
         if (playbleCards.Count > 0) { AICanPlay = 1; } else { AICanPlay = 0; }
-        SaveOutcomeForNeural();
+        SaveOutcomeForNeural(0,0);
 
         //^special case^ if we cant play any one card return null
         if (playbleCards.Count == 0)
@@ -466,10 +468,26 @@ public class BaysProb
         posMoves = countCardAICanPlayOnCard(cardValues, myCards);
 
         isWildCard = 0;
+        addsMoreCards = 0;
+        isSkipCard = 0;
         if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
         {
             isWildCard = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.draw4))
+            {
+                addsMoreCards = 4;
+                isSkipCard = 1;
+            }
         }
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.action))
+        {
+            isSkipCard = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.ActionType.draw2))
+            {
+                addsMoreCards = 2;
+            }
+        }
+
         foreach (GameObject cardl in myCards)
         {
             if (cardIsPlayable(cardl, cardValues))
@@ -773,15 +791,15 @@ public class BaysProb
         }
     }
 
-    private void SaveOutcomeForNeural()
+    public void SaveOutcomeForNeural(int enemyWon, int iWon)
     {
         if (awaitingDatasaveAI)
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
             String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" +
-                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + isWildCard + "-;" +
-                + AICanPlay + "-;" + EnemyPlayed;
+                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + isWildCard + "-;" + addsMoreCards + "-;" + isSkipCard + "-;" +
+                AICanPlay + "-;" + EnemyPlayed + "-;" + iWon + "-;" + enemyWon;
 
             using StreamWriter file = new("DataSaved.txt", true);
             file.WriteLine(text);

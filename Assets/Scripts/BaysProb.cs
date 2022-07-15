@@ -357,7 +357,7 @@ public class BaysProb
         }
 
     }
-    public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable)
+    public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable, int enemyCardsCount)
     {
         CardValueSaver tableCardValues = cardOnTable.GetComponent<CardValueSaver>();
 
@@ -395,17 +395,25 @@ public class BaysProb
         GameObject bestCard = playbleCards[0];
         NNImport nnImport = GameObject.Find("NNImporter").GetComponent<NNImport>();
 
+        string debugPrintMsg = "Couldn't find a good card";
         foreach (GameObject card in playbleCards)//we should replace this with the nural logic 
         {
-            //TODO: Neural Network Logic 
-            nnImport.CalcNNOutput(new float[] { /*new values pls!!!!!*/ });
+            //Neural Network Logic 
+            int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
+            CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
+            double[] evalVals = nnImport.CalcNNOutput(new float[] { (float)colorValueForEnemy(card), (float)typeValueForEnemy(card),
+                                                                    (float)chanceOfDrawingColor(colorIntCode), (float)findChanceOfDrawInDeck(cardValues,colorIntCode),
+                                                                    enemyCardsCount, myCards.Count, countCardAICanPlayOnCard(cardValues, myCards)
+        });
 
-            if (colorValueForEnemy(card) + typeValueForEnemy(card) < currentBest)
+            if (evalVals[0] + (1 - evalVals[1]) < currentBest)
             {
                 bestCard = card;
-                currentBest = colorValueForEnemy(card) + typeValueForEnemy(card);
+                currentBest = evalVals[0] + (1 - evalVals[1]);
+                debugPrintMsg = "Your chance of playing on this is: " + evalVals[1] + " mine is: " + evalVals[0];
             }
         }
+        Debug.Log(debugPrintMsg);
 
         //simple logic for wild cards
         if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
@@ -449,52 +457,12 @@ public class BaysProb
         colorChanceEnemy = colorValueForEnemy(card);
         cardChanceEnemy = typeValueForEnemy(card);
         colorChanceTotal = chanceOfDrawingColor(colorIntCode);
+        cardChanceTotal = findChanceOfDrawInDeck(cardValues, colorIntCode);
         AICardTotal--;
 
-        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
-        {
-            int cardNum = 1;
-            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
-            {
-                cardNum = 0;
-            }
-            double sumAll = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                sumAll += AllCards[i].Sum();
-            }
-            sumAll += AllCards[4].Sum();
 
-            cardChanceTotal = AllCards[colorIntCode][cardNum] / sumAll;
-        }
-        else
-        {
-            int cardNum = 12;
-            if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
-            {
-                cardNum = cardValues.cardNumber;
-            }
-            if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
-            {
-                cardNum = 10;
-            }
-            if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
-            {
-                cardNum = 11;
-            }
-            double sumNum = 0;
-            double sumAll = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                sumNum += AllCards[i][cardNum];
-                sumAll += AllCards[i].Sum();
-            }
-            sumAll += AllCards[4].Sum();
 
-            cardChanceTotal = sumNum / sumAll;
-        }
-
-        posMoves = 0;
+        posMoves = countCardAICanPlayOnCard(cardValues, myCards);
         foreach (GameObject cardl in myCards)
         {
             if (cardIsPlayable(cardl, cardValues))
@@ -506,6 +474,18 @@ public class BaysProb
         awaitingDatasaveAI = true;
 
         return card;
+    }
+    private int countCardAICanPlayOnCard(CardValueSaver cardValues, List<GameObject> myCards)
+    {
+        int Moves = 0;
+        foreach (GameObject cardl in myCards)
+        {
+            if (cardIsPlayable(cardl, cardValues))
+            {
+                Moves++;
+            }
+        }
+        return Moves;
     }
     private CardValueSaver.Color whatColorDoWeHaveMostOf(List<GameObject> myCards)
     {
@@ -543,6 +523,52 @@ public class BaysProb
                 return CardValueSaver.Color.yellow;
             default:
                 return CardValueSaver.Color.red;
+        }
+    }
+
+    private double findChanceOfDrawInDeck(CardValueSaver cardValues, int colorIntCode)
+    {
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            int cardNum = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
+            {
+                cardNum = 0;
+            }
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            return AllCards[colorIntCode][cardNum] / sumAll;
+        }
+        else
+        {
+            int cardNum = 12;
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
+            {
+                cardNum = cardValues.cardNumber;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
+            {
+                cardNum = 10;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
+            {
+                cardNum = 11;
+            }
+            double sumNum = 0;
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumNum += AllCards[i][cardNum];
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            return sumNum / sumAll;
         }
     }
     public void addACardToAIDeck(GameObject card, bool otherPlaydIt)

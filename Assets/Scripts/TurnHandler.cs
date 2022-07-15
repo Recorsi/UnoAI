@@ -165,7 +165,7 @@ public class TurnHandler : MonoBehaviour
         {
             //probabilty.showEntireArrayStructure();
 
-            GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1]);
+            GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1], playerList[0].playerCards.Count);
             probabilty.EnemyCardTotal = playerList[0].playerCards.Count;
             probabilty.AICardTotal = playerList[1].playerCards.Count;
 

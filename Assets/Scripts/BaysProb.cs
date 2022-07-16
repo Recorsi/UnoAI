@@ -684,7 +684,7 @@ public class BaysProb
         {
             predictACard(-1);
         }
-        else if (otherPlaydIt && cardR != -1)
+        else if (otherPlaydIt && cardR != -1 && EnemyDeck.Count > cardR)
         {
             Debug.Log(EnemyDeck[cardR].color + " " + EnemyDeck[cardR].num);
             if (AllCards.Length > EnemyDeck[cardR].color && AllCards[EnemyDeck[cardR].color].Length > EnemyDeck[cardR].num)

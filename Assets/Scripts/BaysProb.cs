@@ -686,7 +686,12 @@ public class BaysProb
         }
         else if (otherPlaydIt && cardR != -1)
         {
-            AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
+            Debug.Log(EnemyDeck[cardR].color + " " + EnemyDeck[cardR].num);
+            if (AllCards.Length > EnemyDeck[cardR].color && AllCards[EnemyDeck[cardR].color].Length > EnemyDeck[cardR].num)
+            {
+                AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
+            }
+
             EnemyDeck.RemoveAt(cardR);
         }
         else

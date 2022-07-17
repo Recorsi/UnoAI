@@ -30,6 +30,9 @@ public class BaysProb
     public int EnemyCardTotal;
     public int AICardTotal;
     private int posMoves;
+    private int isWildCard;
+    private int addsMoreCards;
+    private int isSkipCard;
 
     public bool awaitingDatasaveAI = false;
     public int EnemyPlayed = 0;
@@ -86,22 +89,23 @@ public class BaysProb
     double chanceOfDrawingSpecificCard(int group, int card)
     {
         double cardSum = 0;
-        double cardsSum = 0;
+        double totalCards = 0;
         for (int i = 0; i < 4; i++)
         {
-            cardSum += AllCards[i][card];
+            totalCards += AllCards[i].Sum();
+            
             if (group != 4)
             {
-                cardsSum += AllCards[i].Sum();
+                cardSum += AllCards[i][card];
             }
         }
-        cardsSum += AllCards[4].Sum();
+        totalCards += AllCards[4].Sum();
         if (group == 4)
         {
-            cardsSum += AllCards[4][card];
+            cardSum += AllCards[4][card];
         }
 
-        return cardSum / cardsSum;
+        return cardSum / totalCards;
     }
     double chanceOfDrawingSpecial()
     {
@@ -157,24 +161,34 @@ public class BaysProb
         }
         return res;
     }
-    int mostProbebolColorGivenNOTColor(int color)
+    (int, double) mostProbebolColorGivenNOTColor(int color)
     {
+        double total = 0;
+        for (int i = 0; i < AllCards.Length - 1; i++)
+        {
+            if (i != color)
+            {
+                total += AllCards[i].Sum();
+            }
+        }
+
         double mostLikely = 0;
         int res = 0;
         for (int i = 0; i < AllCards.Length - 1; i++)//-1 cus wild will always work
         {
-            if (i != color && chanceOfDrawingColor(i) > mostLikely)
+            if (i != color && AllCards[i].Sum()/total > mostLikely)
             {
-                mostLikely = chanceOfDrawingColor(i);
+                mostLikely = AllCards[i].Sum() / total;
                 res = i;
             }
         }
-        return res;
+        return (res, mostLikely);
     }
     public void enemyDrewCardInsteadOfPlay(GameObject cardOnTable)
     {
+        Debug.Log("drew predicted");
         CardValueSaver cardOnTableValues = cardOnTable.GetComponent<CardValueSaver>();
-        int color = mostProbebolColorGivenNOTColor(giveColorIntCode(cardOnTableValues));
+        (int color, double colorProp) = mostProbebolColorGivenNOTColor(giveColorIntCode(cardOnTableValues));
         int num = 0;
         if (cardOnTableValues.cardType.Equals(CardValueSaver.CardType.wild))//special case when card was wild
         {
@@ -203,7 +217,7 @@ public class BaysProb
             }
         }
 
-        EnemyDeck.Add(new BaysCards(color, chanceOfDrawingColor(color), num, chanceOfDrawingSpecificCard(color, num)));
+        EnemyDeck.Add(new BaysCards(color, colorProp, num, chanceOfDrawingSpecificCard(color, num)));
         if (AllCards[color][num] > 0)
         {
             AllCards[color][num]--;
@@ -213,11 +227,22 @@ public class BaysProb
             Debug.Log("Critical problem lost track of cards");
         }
 
-        Debug.Log("its color: " + color);
-        Debug.Log("its num: " + num);
     }
-    public void predictACard()
+    public void predictACard(int num)
     {
+        int localNum = 0;
+        foreach(int[] a in AllCards)
+        {
+            localNum += a.Sum();
+        }
+        if (localNum != num && num != -1)
+        {
+            Debug.Log("Should be: " + num);
+            Debug.Log("Was: " + localNum);
+        }
+        else { Debug.Log("Was a match "); }
+
+        Debug.Log("predicted");
         int cardColor = 0;
         double cardColorChance = 0;
 
@@ -288,9 +313,8 @@ public class BaysProb
         AllCards[cardColor][cardNum]--;
 
     }
-    public void makeInitalGuess(List<GameObject> myCards)
+    public void makeInitalGuess(List<GameObject> myCards, GameObject firstCard)
     {
-        Debug.Log("Bays initial idea");
         AllCards[0] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[1] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
         AllCards[2] = new int[] { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -298,20 +322,21 @@ public class BaysProb
         AllCards[4] = new int[] { 4, 4 };
 
         arrangeMyCards(myCards);
+        addACardToAIDeck(firstCard, false, true);
 
         for (int i = 0; i < 7; i++)
         {
-            predictACard();
+            predictACard(-1);
         }
     }
     private void arrangeMyCards(List<GameObject> myCards)
     {
         foreach (GameObject card in myCards)
         {
-            addACardToAIDeck(card, false);
+            addACardToAIDeck(card, false, false);
         }
     }
-    private void removeCardFromGroup(int group, CardValueSaver cardValues, bool otherPlaydIt)
+    private void removeCardFromGroup(int group, CardValueSaver cardValues, bool otherPlaydIt, bool throwCard)
     {
         int index = -1;
 
@@ -338,14 +363,14 @@ public class BaysProb
 
         if (index != -1)
         {
-            if (AllCards[group][index] == 0)
+            if (AllCards[group][index] == 0 && !throwCard)
             {
                 updateBelif(new int[] { group, index }, otherPlaydIt);
             }
             else
             {
                 AllCards[group][index]--;
-                if (otherPlaydIt)
+                if (otherPlaydIt && !throwCard)
                 {
                     updateBelif(new int[] { 4, index }, otherPlaydIt);
                 }
@@ -357,10 +382,10 @@ public class BaysProb
         }
 
     }
-    public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable)
+    public GameObject takeAturn(List<GameObject> myCards, GameObject cardOnTable, int enemyCardsCount)
     {
         CardValueSaver tableCardValues = cardOnTable.GetComponent<CardValueSaver>();
-
+        //showEntireArrayStructure();
         List<GameObject> playbleCards = new List<GameObject>();//lets figure out what cards to consider
         foreach (GameObject card in myCards)
         {
@@ -371,7 +396,7 @@ public class BaysProb
         }
 
         if (playbleCards.Count > 0) { AICanPlay = 1; } else { AICanPlay = 0; }
-        SaveOutcomeForNeural();
+        SaveOutcomeForNeural(0,0);
 
         //^special case^ if we cant play any one card return null
         if (playbleCards.Count == 0)
@@ -393,16 +418,27 @@ public class BaysProb
         double currentBest = 100;
 
         GameObject bestCard = playbleCards[0];
+        NNImport nnImport = GameObject.Find("NNImporter").GetComponent<NNImport>();
 
-        //TODO some logic for wild cards ya know
+        string debugPrintMsg = "Couldn't find a good card";
         foreach (GameObject card in playbleCards)//we should replace this with the nural logic 
         {
-            if (colorValueForEnemy(card) + typeValueForEnemy(card) < currentBest)
+            //Neural Network Logic 
+            int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
+            CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
+            double[] evalVals = nnImport.CalcNNOutput(new float[] { (float)colorValueSumForEnemy(card), (float)typeValueSumForEnemy(card),
+                                                                    (float)chanceOfDrawingColor(colorIntCode), (float)findChanceOfDrawInDeck(cardValues,colorIntCode),
+                                                                    enemyCardsCount, myCards.Count, countCardAICanPlayOnCard(cardValues, myCards)
+        });
+
+            if (evalVals[0] + (1 - evalVals[1]) < currentBest)
             {
                 bestCard = card;
-                currentBest = colorValueForEnemy(card) + typeValueForEnemy(card);
+                currentBest = evalVals[0] + (1 - evalVals[1]);
+                debugPrintMsg = "Your chance of playing on this is: " + evalVals[1] + " mine is: " + evalVals[0];
             }
         }
+        //Debug.Log(debugPrintMsg);
 
         //simple logic for wild cards
         if (bestCard.GetComponent<CardValueSaver>().cardType.Equals(CardValueSaver.CardType.wild))
@@ -410,16 +446,10 @@ public class BaysProb
             AIPickColor(myCards, bestCard);
         }
 
-        Debug.Log("best color would be: " + bestCard.GetComponent<CardValueSaver>().color);
-        Debug.Log("with type: " + bestCard.GetComponent<CardValueSaver>().cardType);
-        Debug.Log("prob of: " + currentBest);
-
         return storeAndPassCard(bestCard, myCards);
     }
-
     private void AIPickColor(List<GameObject> myCards, GameObject card)
     {
-        Debug.Log("picked color: " + whatColorDoWeHaveMostOf(myCards));
         card.GetComponent<CardValueSaver>().color = whatColorDoWeHaveMostOf(myCards);
         switch (card.GetComponent<CardValueSaver>().color)
         {
@@ -437,61 +467,42 @@ public class BaysProb
                 break;
         }
     }
-
     private GameObject storeAndPassCard(GameObject card, List<GameObject> myCards)
     {
         int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
-        colorChanceEnemy = colorValueForEnemy(card);
-        cardChanceEnemy = typeValueForEnemy(card);
+        colorChanceEnemy = colorValueSumForEnemy(card);
+        cardChanceEnemy = typeValueSumForEnemy(card);
         colorChanceTotal = chanceOfDrawingColor(colorIntCode);
+        cardChanceTotal = findChanceOfDrawInDeck(cardValues, colorIntCode);
         AICardTotal--;
 
+
+
+        posMoves = countCardAICanPlayOnCard(cardValues, myCards);
+
+        isWildCard = 0;
+        addsMoreCards = 0;
+        isSkipCard = 0;
         if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
         {
-            int cardNum = 1;
-            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
+            isWildCard = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.draw4))
             {
-                cardNum = 0;
+                addsMoreCards = 4;
+                isSkipCard = 1;
             }
-            double sumAll = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                sumAll += AllCards[i].Sum();
-            }
-            sumAll += AllCards[4].Sum();
-
-            cardChanceTotal = AllCards[colorIntCode][cardNum] / sumAll;
         }
-        else
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.action))
         {
-            int cardNum = 12;
-            if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
+            isSkipCard = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.ActionType.draw2))
             {
-                cardNum = cardValues.cardNumber;
+                addsMoreCards = 2;
             }
-            if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
-            {
-                cardNum = 10;
-            }
-            if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
-            {
-                cardNum = 11;
-            }
-            double sumNum = 0;
-            double sumAll = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                sumNum += AllCards[i][cardNum];
-                sumAll += AllCards[i].Sum();
-            }
-            sumAll += AllCards[4].Sum();
-
-            cardChanceTotal = sumNum / sumAll;
         }
 
-        posMoves = 0;
         foreach (GameObject cardl in myCards)
         {
             if (cardIsPlayable(cardl, cardValues))
@@ -503,6 +514,18 @@ public class BaysProb
         awaitingDatasaveAI = true;
 
         return card;
+    }
+    private int countCardAICanPlayOnCard(CardValueSaver cardValues, List<GameObject> myCards)
+    {
+        int Moves = 0;
+        foreach (GameObject cardl in myCards)
+        {
+            if (cardIsPlayable(cardl, cardValues))
+            {
+                Moves++;
+            }
+        }
+        return Moves;
     }
     private CardValueSaver.Color whatColorDoWeHaveMostOf(List<GameObject> myCards)
     {
@@ -542,7 +565,52 @@ public class BaysProb
                 return CardValueSaver.Color.red;
         }
     }
-    public void addACardToAIDeck(GameObject card, bool otherPlaydIt)
+    private double findChanceOfDrawInDeck(CardValueSaver cardValues, int colorIntCode)
+    {
+        if (cardValues.cardType.Equals(CardValueSaver.CardType.wild))
+        {
+            int cardNum = 1;
+            if (cardValues.wildType.Equals(CardValueSaver.WildType.colorChange))
+            {
+                cardNum = 0;
+            }
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            return AllCards[colorIntCode][cardNum] / sumAll;
+        }
+        else
+        {
+            int cardNum = 12;
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.number))
+            {
+                cardNum = cardValues.cardNumber;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.skip))
+            {
+                cardNum = 10;
+            }
+            if (cardValues.actionType.Equals(CardValueSaver.ActionType.reverse))
+            {
+                cardNum = 11;
+            }
+            double sumNum = 0;
+            double sumAll = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumNum += AllCards[i][cardNum];
+                sumAll += AllCards[i].Sum();
+            }
+            sumAll += AllCards[4].Sum();
+
+            return sumNum / sumAll;
+        }
+    }
+    public void addACardToAIDeck(GameObject card, bool otherPlaydIt, bool throwCard)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
 
@@ -561,12 +629,15 @@ public class BaysProb
 
             if (AllCards[4][index] == 0)
             {
-                updateBelif(new int[] { 4, index }, otherPlaydIt);
+                if (!throwCard)
+                {
+                    updateBelif(new int[] { 4, index }, otherPlaydIt);
+                }
             }
             else
             {
                 AllCards[4][index]--;
-                if (otherPlaydIt)
+                if (otherPlaydIt && !throwCard)
                 {
                     updateBelif(new int[] { 4, index }, otherPlaydIt);
                 }
@@ -574,7 +645,7 @@ public class BaysProb
             return;
         }
 
-        removeCardFromGroup(giveColorIntCode(cardValues), cardValues, otherPlaydIt);
+        removeCardFromGroup(giveColorIntCode(cardValues), cardValues, otherPlaydIt, throwCard);
     }
     public void updateBelif(int[] cardIndex, bool otherPlaydIt)
     {
@@ -584,6 +655,12 @@ public class BaysProb
 
         for (int i = 0; i < EnemyDeck.Count; i++)
         {
+            if (cardR == -1)
+            {
+                leastLikely = Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb);
+                cardR = i;
+            }
+
             if (leastLikely > Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb))
             {
                 leastLikely = Math.Log(EnemyDeck[i].colorProb * EnemyDeck[i].numProb);
@@ -594,24 +671,27 @@ public class BaysProb
             {
 
                 foundCard = true;
-                if (otherPlaydIt)
-                {
-                    Debug.Log("Yea i knew you had that");
-                }
-                else
-                {
-                    Debug.Log("O i thought you had that");
-                }
+                AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
                 EnemyDeck.RemoveAt(i);
+                if (!otherPlaydIt)
+                {
+                    predictACard(-1);
+                }
             }
         }
 
         if (foundCard && !otherPlaydIt)
         {
-            predictACard();
+            predictACard(-1);
         }
-        else if (otherPlaydIt && cardR != -1)
+        else if (otherPlaydIt && cardR != -1 && EnemyDeck.Count > cardR)
         {
+            Debug.Log(EnemyDeck[cardR].color + " " + EnemyDeck[cardR].num);
+            if (AllCards.Length > EnemyDeck[cardR].color && AllCards[EnemyDeck[cardR].color].Length > EnemyDeck[cardR].num)
+            {
+                AllCards[EnemyDeck[cardR].color][EnemyDeck[cardR].num]++;
+            }
+
             EnemyDeck.RemoveAt(cardR);
         }
         else
@@ -619,9 +699,13 @@ public class BaysProb
             Debug.Log("==========================================================================");
             Debug.Log("Fatal error bays has lost track of the cards");
             Debug.Log(cardIndex[0] + " " + cardIndex[1]);
+            showEntireArrayStructure();
+            Debug.Log("Other played it: " + otherPlaydIt);
+            Debug.Log("Other size: " + EnemyDeck.Count);
+            //throw new Exception();
         }
     }
-    private double colorValueForEnemy(GameObject card)
+    private double colorValueSumForEnemy(GameObject card)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
         double bestEnemeyChance = 0;
@@ -630,16 +714,13 @@ public class BaysProb
         {
             if (giveColorIntCode(cardValues) == eCard.color)
             {
-                if (bestEnemeyChance < eCard.colorProb)
-                {
-                    bestEnemeyChance = eCard.colorProb;
-                }
+                bestEnemeyChance += eCard.colorProb;
             }
         }
         return bestEnemeyChance;
 
     }
-    private double typeValueForEnemy(GameObject card)
+    private double typeValueSumForEnemy(GameObject card)
     {
         CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
         double bestEnemeyChance = 0;
@@ -650,10 +731,7 @@ public class BaysProb
             {
                 if (eCard.num < 10 && eCard.num == cardValues.cardNumber)
                 {
-                    if (bestEnemeyChance < eCard.colorProb)
-                    {
-                        bestEnemeyChance = eCard.colorProb;
-                    }
+                    bestEnemeyChance += eCard.colorProb;
                 }
             }
         }
@@ -736,15 +814,15 @@ public class BaysProb
             AllCards[card.color][card.num]--;
         }
     }
-
-    private void SaveOutcomeForNeural()
+    public void SaveOutcomeForNeural(int enemyWon, int iWon)
     {
         if (awaitingDatasaveAI)
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
 
             String text = colorChanceEnemy + "-;" + cardChanceEnemy + "-;" + colorChanceTotal + "-;" +
-                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + AICanPlay + "-;" + EnemyPlayed;
+                cardChanceTotal + "-;" + EnemyCardTotal + "-;" + AICardTotal + "-;" + posMoves + "-;" + isWildCard + "-;" + addsMoreCards + "-;" + isSkipCard + "-;" +
+                AICanPlay + "-;" + EnemyPlayed + "-;" + iWon + "-;" + enemyWon;
 
             using StreamWriter file = new("DataSaved.txt", true);
             file.WriteLine(text);

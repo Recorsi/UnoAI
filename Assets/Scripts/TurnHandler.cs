@@ -92,7 +92,7 @@ public class TurnHandler : MonoBehaviour
             StartCoroutine(PickWildcardColor(discardPile[0]));
         }
 
-        probabilty.makeInitalGuess(playerList[1].playerCards);
+        probabilty.makeInitalGuess(playerList[1].playerCards, discardPile[0].gameObject);
 
         winScreen.SetActive(false);
 
@@ -165,7 +165,7 @@ public class TurnHandler : MonoBehaviour
         {
             //probabilty.showEntireArrayStructure();
 
-            GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1]);
+            GameObject playCard = probabilty.takeAturn(playerList[activePlayer].playerCards, discardPile[discardPile.Count - 1], playerList[0].playerCards.Count);
             probabilty.EnemyCardTotal = playerList[0].playerCards.Count;
             probabilty.AICardTotal = playerList[1].playerCards.Count;
 
@@ -180,7 +180,7 @@ public class TurnHandler : MonoBehaviour
             else
             {
                 PickCard();
-                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count - 1], false);
+                probabilty.addACardToAIDeck(playerList[activePlayer].playerCards[playerList[activePlayer].playerCards.Count - 1], false, false);
                 AiTurn();
             }
             //logic to decide card
@@ -212,12 +212,10 @@ public class TurnHandler : MonoBehaviour
             if (activePlayer == 0)
             {
                 probabilty.EnemyPlayed = 1;
-                probabilty.addACardToAIDeck(playedCard, true);
+                probabilty.addACardToAIDeck(playedCard, true, false);
             }
 
             RevealAICard(playedCard); //reveal card in case its hidden
-
-            print("Played card");
 
             hasPickedCard = false;
 
@@ -246,8 +244,10 @@ public class TurnHandler : MonoBehaviour
                 //disable player 1s cards
                 foreach (var card in playerList[0].playerCards)
                     card.GetComponent<Button>().interactable = false;
+
                 foreach (var card in playerList[1].playerCards)
                     card.GetComponent<Button>().interactable = false;
+
             }
 
         }
@@ -275,6 +275,15 @@ public class TurnHandler : MonoBehaviour
     {
         if (playerList[activePlayer].playerCards.Count == 0)
         {
+            if (activePlayer == 0)
+            {
+                probabilty.SaveOutcomeForNeural(1,0);
+            }
+            else
+            {
+                probabilty.SaveOutcomeForNeural(0,1);
+            }
+
             winText.gameObject.SetActive(true);
             winText.text = "Player " + (activePlayer + 1) + " wins!";
 
@@ -291,6 +300,10 @@ public class TurnHandler : MonoBehaviour
     {
         if (!hasPickedCard)
         {
+            if (playerList[0].activeTurn == true)//AI wants to guess what card it was then
+            {
+                probabilty.enemyDrewCardInsteadOfPlay(discardPile[discardPile.Count - 1]);
+            }
             if (cardSpawner.gameCards.Count >= 1)
             {
                 playerList[activePlayer].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
@@ -299,7 +312,6 @@ public class TurnHandler : MonoBehaviour
 
                 hasPickedCard = true;
 
-                print("picked card");
 
                 ToggleAICardDisplay();
                 CheckForUNO();
@@ -332,10 +344,6 @@ public class TurnHandler : MonoBehaviour
 
         if (!playable) //only skip if not playable
         {
-            if (playerList[0].activeTurn == true)//AI wants to guess what card it was then
-            {
-                probabilty.enemyDrewCardInsteadOfPlay(discardPile[discardPile.Count - 1]);
-            }
             SwitchActivePlayer();
 
             hasPickedCard = false;
@@ -355,8 +363,7 @@ public class TurnHandler : MonoBehaviour
                         break;
                     case 1:
                         playerList[0].playerCards.Add(cardSpawner.gameCards[cardSpawner.gameCards.Count - 1]); //give active player last card on deck
-                        Debug.Log("ill guess now");
-                        probabilty.predictACard();//let the AI guess what card human got
+                        probabilty.predictACard(cardSpawner.gameCards.Count);//let the AI guess what card human got
                         break;
                 }
 

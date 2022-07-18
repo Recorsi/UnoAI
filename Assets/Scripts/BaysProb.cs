@@ -426,15 +426,30 @@ public class BaysProb
             //Neural Network Logic 
             int colorIntCode = giveColorIntCode(card.GetComponent<CardValueSaver>());
             CardValueSaver cardValues = card.GetComponent<CardValueSaver>();
+            float wildC = 0;
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.wild)) { wildC = 1; }
+
+            float drawC = 0;
+            float isSkip = 0;
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.wild) && cardValues.wildType.Equals(CardValueSaver.WildType.draw4)) { drawC = 1; isSkip = 1; }
+            if (cardValues.cardType.Equals(CardValueSaver.CardType.action)) {
+                isSkip = 1;
+                if (cardValues.actionType.Equals(CardValueSaver.ActionType.draw2))
+                {
+                    drawC = 1;
+                }
+            }
+
             double[] evalVals = nnImport.CalcNNOutput(new float[] { (float)colorValueSumForEnemy(card), (float)typeValueSumForEnemy(card),
                                                                     (float)chanceOfDrawingColor(colorIntCode), (float)findChanceOfDrawInDeck(cardValues,colorIntCode),
-                                                                    enemyCardsCount, myCards.Count, countCardAICanPlayOnCard(cardValues, myCards)
+                                                                    enemyCardsCount, myCards.Count, countCardAICanPlayOnCard(cardValues, myCards),
+                                                                    wildC,drawC,isSkip
         });
 
-            if (evalVals[0] + (1 - evalVals[1]) < currentBest)
+            if (evalVals[0] + (1 - evalVals[1]) + evalVals[2] + (1 - evalVals[3]) < currentBest)
             {
                 bestCard = card;
-                currentBest = evalVals[0] + (1 - evalVals[1]);
+                currentBest = evalVals[0] + (1 - evalVals[1]) + evalVals[2] + (1 - evalVals[3]);
                 debugPrintMsg = "Your chance of playing on this is: " + evalVals[1] + " mine is: " + evalVals[0];
             }
         }

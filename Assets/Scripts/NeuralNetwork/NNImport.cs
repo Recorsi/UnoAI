@@ -21,10 +21,10 @@ public class NNImport : MonoBehaviour
 
     public double[] CalcNNOutput(float[] inputVal)
     {
-        if (inputVal.Length != 7)
+        if (inputVal.Length != 10)
             throw new System.Exception();
 
-        var inputTensor = new Tensor(1, 7, inputVal);
+        var inputTensor = new Tensor(1, 10, inputVal);
         worker.Execute(inputTensor);
 
         var output = worker.PeekOutput();
@@ -33,7 +33,7 @@ public class NNImport : MonoBehaviour
         //for (int i = 0; i < output.length; i++)
         //    print(output[i]);
 
-        return new double[] { output[0], output[1] };
+        return new double[] { output[0], output[1], output[2], output[3] };
     }
 
     //TODO: find way to dispose after turn

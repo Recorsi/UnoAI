@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #the inital setup
 n_input, n_hidden, n_out, learning_rate = 10, 20, 4, 0.01
-accDataAmount = 100
+accDataAmount = 872
 debug = 1
 pathHere = 'C:/My programs/Git/UnoAI/NeuralNet/'
 
@@ -206,13 +206,13 @@ if(debug):
     plt.plot(diviations1)
     plt.ylabel('diviation')
     plt.xlabel('miss predictions')
-    plt.title("Average diviation rate3: %f"%(diviationProp1))
+    plt.title("Average diviation rate1: %f"%(diviationProp1))
     plt.show()   
 
     plt.plot(diviations2)
     plt.ylabel('diviation')
     plt.xlabel('miss predictions')
-    plt.title("Average diviation rate3: %f"%(diviationProp2))
+    plt.title("Average diviation rate2: %f"%(diviationProp2))
     plt.show()   
 
     plt.plot(diviations3)

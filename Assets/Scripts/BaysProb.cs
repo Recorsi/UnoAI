@@ -831,6 +831,7 @@ public class BaysProb
     }
     public void SaveOutcomeForNeural(int enemyWon, int iWon)
     {
+#if UNITY_EDITOR
         if (awaitingDatasaveAI)
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
@@ -845,6 +846,7 @@ public class BaysProb
 
         EnemyPlayed = 0;
         awaitingDatasaveAI = false;
+#endif
     }
 
 

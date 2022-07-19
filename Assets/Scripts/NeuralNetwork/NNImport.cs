@@ -9,18 +9,22 @@ public class NNImport : MonoBehaviour
 
     IWorker worker;
 
+    Model model;
+
     void Start()
     {
-        var model = ModelLoader.Load(modelSource);
+        model = ModelLoader.Load(modelSource);
         //var model = ModelLoader.LoadFromStreamingAssets("model" + ".nn");
 
-        worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, model);
+        //worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, model);
         
         //print("This is the output: " + (output[0] < 0.5 ? 0 : 1));
     }
 
     public double[] CalcNNOutput(float[] inputVal)
     {
+        worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, model);
+
         if (inputVal.Length != 10)
             throw new System.Exception();
 
@@ -32,8 +36,13 @@ public class NNImport : MonoBehaviour
         //print output
         //for (int i = 0; i < output.length; i++)
         //    print(output[i]);
+        double[] outputArray = new double[] { output[0], output[1], output[2], output[3] };
 
-        return new double[] { output[0], output[1], output[2], output[3] };
+        inputTensor.Dispose();
+        output.Dispose();
+        worker.Dispose();
+
+        return outputArray;
     }
 
     //TODO: find way to dispose after turn

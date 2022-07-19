@@ -86,7 +86,7 @@ def train_tree(X_train: list, y_train: list, X_test: list, y_test: list) -> tupl
 
 tree_clf, tree_acc = train_tree(X_train, y_train, X_test, y_test)
 
-print('Performance: ' + str(tree_acc))
+print('Tree performance: ' + str(tree_acc))
 
 # %% [markdown]
 # ### Random forest classifier
@@ -105,7 +105,7 @@ def train_forest(X_train: list, y_train: list, X_test: list, y_test: list) -> tu
 
 rfc, rfc_acc = train_forest(X_train, y_train, X_test, y_test)
 
-print('Performance: ' + str(rfc_acc))
+print('Forest performance: ' + str(rfc_acc))
 
 # %% [markdown]
 # ### KNeighborsClassifier
@@ -124,7 +124,7 @@ def train_knn(X_train: list, y_train: list, X_test: list, y_test: list) -> tuple
 
 knn, knn_acc = train_knn(X_train, y_train, X_test, y_test)
 
-print('Performance: ' + str(knn_acc))
+print('KNN performance: ' + str(knn_acc))
 
 # %% [markdown]
 # ### SVM classifier

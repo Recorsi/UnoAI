@@ -5,11 +5,10 @@ import os
 import pandas as pd
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
 # %% [markdown]
 # ### Read file
@@ -87,6 +86,10 @@ def train_tree(X_train: list, y_train: list, X_test: list, y_test: list) -> tupl
 tree_clf, tree_acc = train_tree(X_train, y_train, X_test, y_test)
 
 print('Tree performance: ' + str(tree_acc))
+
+# plt.figure(figsize=(110, 60))
+# tree.plot_tree(tree_clf, fontsize=12, feature_names=['ColorOfEnemyCard percent', 'TypeOfEnemyCard percent', 'ColorOfCardTotal percent', 'TypeOfCardTotal percent', 'EnemyCardTotal', 'AIcardTotal', 'PosMoves', 'IsWildCard', 'AddsMoreCards', 'IsSkipCard'])
+# plt.show()
 
 # %% [markdown]
 # ### Random forest classifier

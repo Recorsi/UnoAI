@@ -23,9 +23,9 @@ def discovery():
     return {
         'links': {
             '/retrain (GET)': 'Retrains all models on current data present.',
-            '/knn-predict?input=[float x 10] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s knn classifier.',
-            '/tree-predict?input=[float x 10] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s decision-tree classifier.',
-            '/forest-predict?input=[float x 10] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s random-forest classifiers.'
+            '/knn-predict?input=[0,0,0.234567901234568,0.0740740740740741,1,1,2,0,0,0] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s knn classifier.',
+            '/tree-predict?input=[0,0,0.234567901234568,0.0740740740740741,1,1,2,0,0,0] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s decision-tree classifier.',
+            '/forest-predict?input=[0,0,0.234567901234568,0.0740740740740741,1,1,2,0,0,0] (GET)': 'Predicts [AICanPlay, EnemyPlayed, iWon, enemyWon] using sklearn\'s random-forest classifiers.'
         }
     }
 

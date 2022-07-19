@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+    flask:
+        container_name: flask
+        ports:
+            - 5000:5000
+        build:
+            context: .
+        restart: unless-stopped
+        networks:
+            - flask
+
+networks:
+    flask:
+        driver: bridge

@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # %% [markdown]
 # ### Read file
